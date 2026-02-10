@@ -13,7 +13,7 @@ import { RangeField } from "./fields/range";
 
 @Component({
 	selector: 'spartan-simple-rich-filter',
-	imports: [HlmButtonImports, NgIcon, HlmIconImports, KeyValuePipe, TextField, NumberField, BooleanField, RangeField],
+	imports: [HlmButtonImports, NgIcon, HlmIconImports, TextField, NumberField, BooleanField, RangeField],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFilterX, lucideListFilterPlus })],
 	template: `
@@ -39,7 +39,7 @@ import { RangeField } from "./fields/range";
 							<spartan-rich-filter-range-field [label]="e.id"></spartan-rich-filter-range-field>
 						}
 						@default {
-							<span>not implemented: {{ e.id }} : {{ e.type }}</span>
+							<span>not yet implemented: {{ e.id }} : {{ e.type }}</span>
 						}
 					}
 				}

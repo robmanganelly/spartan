@@ -8,8 +8,8 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { HlmSliderImports } from '@spartan-ng/helm/slider';
 import { RangeOperators } from '../engine/operators';
 
 @Component({
@@ -26,7 +26,7 @@ import { RangeOperators } from '../engine/operators';
 		BrnSelectImports,
 		HlmSelectImports,
 		HlmPopoverImports,
-		HlmSliderImports,
+		HlmRangeSliderImports,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -68,12 +68,12 @@ import { RangeOperators } from '../engine/operators';
 					10 - 250
 				</button>
 				<hlm-popover-content class="rounded-xl p-0 text-sm" *hlmPopoverPortal="let ctx">
-					<div class="border-input border-b px-4 py-3">
-						<hlm-slider />
-						<!--	<div class="text-sm font-medium">Agent Tasks</div>
-					</div>
+					<!-- <div class="border-input border-b px-4 py-3"> -->
+					<!-- <div class="text-sm font-medium">Agent Tasks</div> -->
+					<!-- </div> -->
 					<div class="p-4 text-sm">
-						<textarea
+						<hlm-range-slider />
+						<!-- <textarea
 							hlmInput
 							placeholder="Describe your task in natural language."
 							class="mb-4 min-h-16 resize-none"
@@ -82,8 +82,8 @@ import { RangeOperators } from '../engine/operators';
 						<p class="text-muted-foreground">
 							Describe your task in natural language. Copilot will work in the background and open a pull request for
 							your review.
-						</p>
-						--></div>
+						</p> -->
+					</div>
 				</hlm-popover-content>
 
 				<!-- close button -->
