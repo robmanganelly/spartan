@@ -29,7 +29,6 @@ const filterModel = buildFilterModel(
 		<div class="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
 			<div class="w-full max-w-6xl">
 				<spartan-simple-rich-filter [state]="filterState" />
-
 				<div class="mt-10">
 					<pre>{{ filterState.value() | json }}</pre>
 				</div>
