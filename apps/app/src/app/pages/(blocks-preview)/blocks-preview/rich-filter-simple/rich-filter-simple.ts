@@ -13,10 +13,12 @@ import { NumberField } from './fields/number';
 import { TextField } from './fields/text';
 import { TimeField } from './fields/time';
 import { RangeField } from "./fields/range";
+import { SelectField } from "./fields/select";
+import { ComboField } from "./fields/combo";
 
 @Component({
 	selector: 'spartan-simple-rich-filter',
-	imports: [HlmButtonImports, NgIcon, HlmIconImports, TextField, NumberField, BooleanField, RangeField, TimeField, DateField, DateRangeField],
+	imports: [HlmButtonImports, NgIcon, HlmIconImports, TextField, NumberField, BooleanField, RangeField, TimeField, DateField, DateRangeField, SelectField, ComboField],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFilterX, lucideListFilterPlus })],
 	template: `
@@ -50,9 +52,15 @@ import { RangeField } from "./fields/range";
 						@case (types.daterange) {
 							<spartan-rich-filter-daterange-field [label]="e.id"></spartan-rich-filter-daterange-field>
 						}
-						@default {
-							<span>not yet implemented : {{ e.id }} : {{ e.type }}</span>
+						@case (types.select) {
+							<spartan-rich-filter-select-field [label]="e.id"></spartan-rich-filter-select-field>
 						}
+						@case (types.combobox) {
+							<spartan-rich-filter-combo-field [label]="e.id"></spartan-rich-filter-combo-field>
+						}
+						<!-- @default {
+							<span>not yet implemented : {{ e.id }} : {{ e.type }}</span>
+						} -->
 					}
 				}
 			</div>
