@@ -66,6 +66,18 @@ export const RangeOperators = {
 
 export type IRangeOperator = typeof RangeOperators[keyof typeof RangeOperators];
 
+
+export const TimeOperators = {
+	at: 'at',
+	notAt: 'nat',
+	past: 'pst',
+	notPast: 'npst',
+	before: 'bfr',
+	notBefore: 'nbfr',
+}
+
+export type ITimeOperator = typeof TimeOperators[keyof typeof TimeOperators];
+
 export const Operators = {
 	...IdentityOperators,
 	...EqualityOperators,
@@ -73,6 +85,7 @@ export const Operators = {
 	...SelectOperators,
 	...SetOperators,
 	...RangeOperators,
+	...TimeOperators,
 } as const;
 
 export type IOperator = typeof Operators[keyof typeof Operators];

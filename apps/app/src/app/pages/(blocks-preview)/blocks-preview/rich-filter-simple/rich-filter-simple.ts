@@ -7,13 +7,16 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { FilterModelRef } from './engine/builders';
 import { FieldTypes } from './engine/types';
 import { BooleanField } from './fields/boolean';
+import { DateField } from './fields/date';
+import { DateRangeField } from './fields/daterange';
 import { NumberField } from './fields/number';
 import { TextField } from './fields/text';
+import { TimeField } from './fields/time';
 import { RangeField } from "./fields/range";
 
 @Component({
 	selector: 'spartan-simple-rich-filter',
-	imports: [HlmButtonImports, NgIcon, HlmIconImports, TextField, NumberField, BooleanField, RangeField],
+	imports: [HlmButtonImports, NgIcon, HlmIconImports, TextField, NumberField, BooleanField, RangeField, TimeField, DateField, DateRangeField],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFilterX, lucideListFilterPlus })],
 	template: `
@@ -38,8 +41,17 @@ import { RangeField } from "./fields/range";
 						@case (types.range) {
 							<spartan-rich-filter-range-field [label]="e.id"></spartan-rich-filter-range-field>
 						}
+						@case (types.time) {
+							<spartan-rich-filter-time-field [label]="e.id"></spartan-rich-filter-time-field>
+						}
+						@case (types.date) {
+							<spartan-rich-filter-date-field [label]="e.id"></spartan-rich-filter-date-field>
+						}
+						@case (types.daterange) {
+							<spartan-rich-filter-daterange-field [label]="e.id"></spartan-rich-filter-daterange-field>
+						}
 						@default {
-							<span>not yet implemented: {{ e.id }} : {{ e.type }}</span>
+							<span>not yet implemented : {{ e.id }} : {{ e.type }}</span>
 						}
 					}
 				}
@@ -56,4 +68,6 @@ export class RichFilterSimple {
 	readonly state = input.required<FilterModelRef>();
 
 	readonly types = FieldTypes;
+
+	readonly compileFailure = 1;
 }
