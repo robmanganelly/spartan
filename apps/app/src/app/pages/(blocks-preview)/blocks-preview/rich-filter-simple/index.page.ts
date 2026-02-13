@@ -39,4 +39,6 @@ const filterModel = buildFilterModel(
 export default class RichFilterSimplePage {
 
 	filterState = filterModel;
+
+	recompileFailure = 2;
 }
