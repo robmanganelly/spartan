@@ -1,13 +1,14 @@
 import { computed, Signal, signal } from '@angular/core';
-import { IOperator, ITextOperator, Operators } from './operators';
+import { IEqualityOperator, IIdentityOperator, IOperator, ITextOperator, ITimeOperator, Operators } from './operators';
 import { FieldTypes, IFieldType } from './types';
 
 const buildTextField = <S extends string>(
 	id: S,
-	value: string | null,
+	value: string,
 	operator: ITextOperator,
 	options?: {
 		initialVisible?: boolean;
+		required?: boolean;
 	},
 ) => ({
 	id,
@@ -16,14 +17,18 @@ const buildTextField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__required: !!options?.required,
 });
 
 export const buildNumberField = <S extends string>(
 	id: S,
 	value: number,
-	operator: IOperator,
+	operator: IEqualityOperator,
 	options?: {
 		initialVisible?: boolean;
+		min?: number;
+		max?: number;
+		step?: number;
 	},
 ) => ({
 	id,
@@ -32,14 +37,19 @@ export const buildNumberField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__min: options?.min,
+	__max: options?.max,
+	__step: options?.step,
 });
 
 export const buildDateField = <S extends string>(
 	id: S,
 	value: Date,
-	operator: IOperator,
+	operator: IEqualityOperator,
 	options?: {
 		initialVisible?: boolean;
+		min?: Date;
+		max?: Date;
 	},
 ) => ({
 	id,
@@ -48,14 +58,18 @@ export const buildDateField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__min: options?.min,
+	__max: options?.max,
 });
 
 export const buildTimeField = <S extends string>(
 	id: S,
 	value: Date,
-	operator: IOperator,
+	operator: ITimeOperator,
 	options?: {
 		initialVisible?: boolean;
+		min?: Date;
+		max?: Date;
 	},
 ) => ({
 	id,
@@ -64,14 +78,17 @@ export const buildTimeField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__min: options?.min,
+	__max: options?.max,
 });
 
 export const buildSelectField = <S extends string>(
 	id: S,
 	value: string | null,
-	operator: IOperator,
-	options?: {
+	operator: IIdentityOperator,
+	options: {
 		initialVisible?: boolean;
+		options: { label: string; value: unknown }[];
 	},
 ) => ({
 	id,
@@ -80,14 +97,16 @@ export const buildSelectField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__options: options?.options,
 });
 
 export const buildComboField = <S extends string>(
 	id: S,
-	value: string | null,
-	operator: IOperator,
-	options?: {
+	value: string,
+	operator: IIdentityOperator,
+	options: {
 		initialVisible?: boolean;
+		options: { label: string; value: unknown }[];
 	},
 ) => ({
 	id,
@@ -96,6 +115,25 @@ export const buildComboField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__options: options?.options,
+});
+
+export const buildComboFieldAsync = <S extends string>(
+	id: S,
+	value: string,
+	operator: IIdentityOperator,
+	options: {
+		initialVisible?: boolean;
+		resolver: (pattern: string) => Promise<{ label: string; value: unknown }[]>;
+	},
+) => ({
+	id,
+	__type: FieldTypes.combobox,
+	value,
+	operator,
+	__index: 0,
+	__visible: !!options?.initialVisible,
+	__optionsFn: options?.resolver,
 });
 
 export const buildBooleanField = <S extends string>(
@@ -122,6 +160,8 @@ export const buildRangeField = <S extends string>(
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
+		min?: number;
+		max?: number;
 	},
 ) => ({
 	id,
@@ -130,6 +170,8 @@ export const buildRangeField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__min: options?.min,
+	__max: options?.max,
 });
 
 export const buildDateRangeField = <S extends string>(
@@ -138,6 +180,8 @@ export const buildDateRangeField = <S extends string>(
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
+		min?: Date;
+		max?: Date;
 	},
 ) => ({
 	id,
@@ -146,6 +190,8 @@ export const buildDateRangeField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__min: options?.min,
+	__max: options?.max,
 });
 
 export const fieldBuilder = {
@@ -281,6 +327,50 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		return field.operator;
 	};
 
+	const fieldOptions = (fieldId: T[number]['id']): T[number] extends { __options: infer O } ? O : never => {
+		const field = _v()[fieldId] as T[number] & { __options?: unknown };
+		if (!field.__options) {
+			throw new Error(`Field with id ${fieldId} does not have options`);
+		}
+		return field.__options as T[number] extends { __options: infer O } ? O : never;
+	};
+
+	const fieldNumericOptions = (
+		fieldId: T[number]['id'],
+	): { min: number | null; max: number | null; step: number | null } => {
+		const field = _v()[fieldId] as T[number] & { __min?: unknown; __max?: unknown; __step?: unknown };
+		if (field.__type !== FieldTypes.number) {
+			return { min: null, max: null, step: null };
+		} else {
+			return {
+				min: field.__min as number | null,
+				max: field.__max as number | null,
+				step: field.__step as number | null,
+			};
+		}
+	};
+
+	const fieldMinMax = <MinMax>(
+		fieldId: T[number]['id'],
+	): MinMax extends { __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null } => {
+		const field = _v()[fieldId] as T[number] & { __min?: unknown; __max?: unknown };
+		if (!('__min' in field) || !('__max' in field)) {
+			return { min: null, max: null } as MinMax extends { __min: infer Min; __max: infer Max }
+				? { min: Min; max: Max }
+				: { min: null; max: null };
+		}
+		return {
+			min: field.__min,
+			max: field.__max,
+		} as MinMax extends { __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
+	};
+
+	const fieldRequired = (fieldId: T[number]['id']): boolean => {
+		const field = _v()[fieldId];
+		// add other types as needed, for now only text fields can be required
+		return field.__type === FieldTypes.text ? !!field.__required : false;
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -295,6 +385,10 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		clear,
 		fieldValue,
 		fieldOperator,
+		fieldOptions,
+		fieldNumericOptions,
+		fieldMinMax,
+		fieldRequired,
 	};
 }
 
@@ -311,6 +405,12 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	clear(): void;
 	fieldValue<V extends TFields['value']>(fieldId: TId): V;
 	fieldOperator(fieldId: TId): TFields['operator'];
+	fieldOptions(fieldId: TId): TFields extends { __options: infer O } ? O : never;
+	fieldNumericOptions(fieldId: TId): { min: number | null; max: number | null; step: number | null };
+	fieldMinMax(
+		fieldId: TId,
+	): TFields extends { __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
+	fieldRequired(fieldId: TId): boolean;
 }
 
 // Infer exact type from a specific buildFilterModel call

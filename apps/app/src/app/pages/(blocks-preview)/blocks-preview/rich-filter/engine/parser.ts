@@ -4,8 +4,10 @@ import { FilterModelRef, RFilterField } from './builders';
  * Describes the shape of the object that will be returned from the parser function.
  * It matches the shape of the value that the builder produces, but with all private properties (those starting with __) stripped away and any properties whose value is null or undefined excluded.
  */
-export type ParsedField = Omit<RFilterField, '__index' | '__visible' | '__type' | 'value'> & {
-	value: NonNullable<RFilterField['value']>;
+export type ParsedField = {
+	[K in keyof RFilterField as K extends `__${string}` ? never : K]: K extends 'value'
+		? Exclude<RFilterField['value'], null | undefined>
+		: RFilterField[K];
 };
 
 /**

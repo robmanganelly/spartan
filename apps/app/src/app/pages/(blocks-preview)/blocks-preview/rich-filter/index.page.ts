@@ -5,16 +5,22 @@ import { Operators } from './engine/operators';
 import { SpartanRichFilter } from './rich-filter';
 import { filterParser } from './engine/parser';
 
+const roleOptions = [
+	{ label: 'Admin', value: 'admin' },
+	{ label: 'User', value: 'user' },
+	{ label: 'Guest', value: 'guest' },
+];
+
 const filterModel = buildFilterModel(
-	f.text('name', null, Operators.includes),
-	f.number('age', 0, Operators.greaterThan),
-	f.boolean('isActive', null),
-	f.select('role', null, Operators.equals),
-	f.date('createdAt', new Date(), Operators.lessThan),
-	f.daterange('dateRange', null, Operators.between),
+	f.text('name', '', Operators.includes, { required: true }),
+	f.number('age', 0, Operators.greaterThan, { min: 0 , max: 120, step: 1}),
+	f.boolean('isActive', true),
+	f.select('role', null, Operators.is, { options: roleOptions}),
+	f.date('createdAt', new Date(), Operators.lessThan, { max: new Date() }),
+	f.daterange('dateRange', null, Operators.between, { max: new Date() }),
 	f.range('priceRange', null, Operators.between),
-	f.time('time', new Date(), Operators.lessThan),
-	f.combobox('country', null, Operators.equals)
+	f.time('time', new Date(), Operators.notPast),
+	f.combobox('country', '', Operators.is, { options: []})
 );
 
 @Component({
