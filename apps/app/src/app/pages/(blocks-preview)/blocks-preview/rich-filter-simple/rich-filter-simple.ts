@@ -39,34 +39,38 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 		@let filter = state();
 		<div class="flex w-full gap-2">
 			<div class="flex flex-1 flex-wrap gap-2">
-			@let remaining = filter.availableFields();
-			@if(remaining.length){<button hlmBtn [hlmDropdownMenuTrigger]="addFilterMenu" align="start">
-					<ng-icon size="sm" hlm name="lucideListFilterPlus" />
-					Add Filter
-				</button>
-				<ng-template #addFilterMenu>
-					<hlm-dropdown-menu class="w-48">
-						<hlm-dropdown-menu-group>
-							@for (field of remaining; track field.id) {
-								<button hlmDropdownMenuItem (click)="filter.addField(field.id)">
-									<span>{{ field.id }}</span>
-								</button>
-							} @empty {
-								<div class="text-muted-foreground px-2 py-1.5 text-sm">No more filters</div>
-							}
-						</hlm-dropdown-menu-group>
-					</hlm-dropdown-menu>
-				</ng-template>}
+				@let remaining = filter.availableFields();
+				@let active = fields();
 				<!--inputs rendered programmatically  -->
-				@for (entry of fieldEntries(); track entry.id) {
-					<ng-container *ngComponentOutlet="entry.component; inputs: entry.inputs" />
+				@for (field of active; track field.id) {
+					<ng-container *ngComponentOutlet="field.component; inputs: field.inputs" />
+				}
+				<!-- button comes after -->
+				@if (remaining.length) {
+					<button size="icon" hlmBtn [hlmDropdownMenuTrigger]="addFilterMenu" align="start">
+						<ng-icon size="sm" hlm name="lucideListFilterPlus" />
+					</button>
+					<ng-template #addFilterMenu>
+						<hlm-dropdown-menu class="w-48">
+							<hlm-dropdown-menu-group>
+								@for (field of remaining; track field.id) {
+									<button hlmDropdownMenuItem (click)="filter.addField(field.id)">
+										<span>{{ field.id }}</span>
+									</button>
+								} @empty {
+									<div class="text-muted-foreground px-2 py-1.5 text-sm">No filters available</div>
+								}
+							</hlm-dropdown-menu-group>
+						</hlm-dropdown-menu>
+					</ng-template>
+				}
+				@if (active.length) {
+					<button size="icon" hlmBtn (click)="filter.clear()">
+						<ng-icon size="sm" hlm name="lucideFilterX" />
+					</button>
 				}
 			</div>
-
-			<button hlmBtn (click)="filter.clear()">
-				<ng-icon size="sm" hlm name="lucideFilterX" />
-				Clear
-			</button>
+			<!--ANYTHING HERE WILL BE OUTSIDE WRAPPING DIV -->
 		</div>
 	`,
 })
@@ -74,7 +78,7 @@ export class RichFilterSimple {
 	readonly state = input.required<FilterModelRef>();
 
 	/** Computed array of { component, inputs } entries for NgComponentOutlet. */
-	readonly fieldEntries = computed(() => {
+	readonly fields = computed(() => {
 		const filter = this.state();
 		return filter.fieldsArray().map((e) => ({
 			id: e.id,
