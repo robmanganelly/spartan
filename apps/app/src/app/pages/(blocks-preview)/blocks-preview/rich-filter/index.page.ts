@@ -2,7 +2,7 @@ import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 import { buildFilterModel, fieldBuilder as f } from './engine/builders';
 import { Operators } from './engine/operators';
-import { RichFilterSimple } from './rich-filter-simple';
+import { SpartanRichFilter } from './rich-filter';
 import { filterParser } from './engine/parser';
 
 const filterModel = buildFilterModel(
@@ -18,8 +18,8 @@ const filterModel = buildFilterModel(
 );
 
 @Component({
-	selector: 'spartan-rich-filter-simple',
-	imports: [RichFilterSimple, JsonPipe],
+	selector: 'spartan-rich-filter',
+	imports: [SpartanRichFilter, JsonPipe],
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: {
@@ -29,7 +29,7 @@ const filterModel = buildFilterModel(
 	template: `
 		<div class="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
 			<div class="w-full max-w-6xl">
-				<spartan-simple-rich-filter [state]="filterState" />
+				<spartan-rich-filter [state]="filterState" />
 				<div class="mt-10">
 					<div>Parsed Value</div>
 					<pre>{{ payload() | json }}</pre>
@@ -42,13 +42,12 @@ const filterModel = buildFilterModel(
 		</div>
 	`,
 })
-export default class RichFilterSimplePage {
+export default class RichFilterPage {
 
 	readonly filterState = filterModel;
 
 	readonly parserFn = filterParser;
 
 	readonly payload = computed(()=>this.parserFn(this.filterState.value()));
-
 
 }
