@@ -18,7 +18,7 @@ const filterModel = buildFilterModel(
 );
 
 @Component({
-	selector: 'spartan-rich-filter',
+	selector: 'spartan-rich-filter-page',
 	imports: [SpartanRichFilter, JsonPipe],
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush,
