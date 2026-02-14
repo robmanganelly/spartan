@@ -8,11 +8,11 @@ import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
-import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { EqualityOperators, IdentityOperators } from '../engine/operators';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { FieldClose } from "../utils/field-close";
+import { FieldLabel } from '../utils/field-label';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
@@ -20,14 +20,14 @@ import { FieldClose } from "../utils/field-close";
 	imports: [
     HlmInputGroupImports,
     HlmButtonGroupImports,
-    HlmLabelImports,
     HlmIconImports,
     HlmButtonImports,
     HlmInputImports,
     BrnSelectImports,
     HlmSelectImports,
     HlmCheckboxImports,
-    FieldClose
+    FieldClose,
+    FieldLabel,
 ],
 	host: {},
 	template: `
@@ -36,9 +36,7 @@ import { FieldClose } from "../utils/field-close";
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<div hlmButtonGroupText>
-				<label class="w-content" hlmLabel [for]="fieldLabel()">{{ id() }}</label>
-			</div>
+			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
 
 			<!-- <brn-select class="inline-block" placeholder="Select an option" [value]="operators[0].value">
@@ -62,6 +60,8 @@ import { FieldClose } from "../utils/field-close";
 			</brn-select> -->
 
 			<!-- boolean input -->
+			<div hlmButtonGroupSeparator ></div>
+
 			<div hlmButtonGroupText>
 				<hlm-checkbox [id]="fieldLabel()" />
 			</div>
