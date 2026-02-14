@@ -23,7 +23,7 @@ import { IOperator } from '../../engine/operators';
 					</div>
 				</hlm-select-value>
 			</hlm-select-trigger>
-			<hlm-select-content class="!min-w-40">
+			<hlm-select-content class="!min-w-52">
 				@for (operator of _operators(); track operator.key) {
 					<hlm-option [value]="operator.value">
 						<span>

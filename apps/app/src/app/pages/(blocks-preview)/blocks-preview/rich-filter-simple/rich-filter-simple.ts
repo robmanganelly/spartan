@@ -65,7 +65,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 					</ng-template>
 				}
 				@if (active.length) {
-					<button size="icon" hlmBtn (click)="filter.clear()">
+					<button variant="destructive" size="icon" hlmBtn (click)="filter.clear()">
 						<ng-icon size="sm" hlm name="lucideFunnelX" />
 					</button>
 				}

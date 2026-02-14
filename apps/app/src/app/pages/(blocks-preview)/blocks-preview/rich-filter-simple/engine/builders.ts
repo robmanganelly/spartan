@@ -20,7 +20,7 @@ const buildTextField = <S extends string>(
 
 export const buildNumberField = <S extends string>(
 	id: S,
-	value: number | null,
+	value: number,
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
