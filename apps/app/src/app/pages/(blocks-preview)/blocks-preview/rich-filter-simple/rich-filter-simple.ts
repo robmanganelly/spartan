@@ -1,7 +1,7 @@
 import { NgComponentOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, Type } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideFilterX, lucideListFilterPlus } from '@ng-icons/lucide';
+import { lucideFunnel, lucideFunnelPlus, lucideFunnelX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
@@ -34,7 +34,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 	selector: 'spartan-simple-rich-filter',
 	imports: [HlmButtonImports, NgIcon, HlmIconImports, HlmDropdownMenuImports, NgComponentOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	providers: [provideIcons({ lucideFilterX, lucideListFilterPlus })],
+	providers: [provideIcons({ lucideFunnel, lucideFunnelX, lucideFunnelPlus})],
 	template: `
 		@let filter = state();
 		<div class="flex w-full gap-2">
@@ -48,7 +48,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 				<!-- button comes after -->
 				@if (remaining.length) {
 					<button size="icon" hlmBtn [hlmDropdownMenuTrigger]="addFilterMenu" align="start">
-						<ng-icon size="sm" hlm name="lucideListFilterPlus" />
+						<ng-icon size="sm" hlm [name]="active.length ? 'lucideFunnelPlus' : 'lucideFunnel'" />
 					</button>
 					<ng-template #addFilterMenu>
 						<hlm-dropdown-menu class="w-48">
@@ -66,7 +66,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 				}
 				@if (active.length) {
 					<button size="icon" hlmBtn (click)="filter.clear()">
-						<ng-icon size="sm" hlm name="lucideFilterX" />
+						<ng-icon size="sm" hlm name="lucideFunnelX" />
 					</button>
 				}
 			</div>
