@@ -82,7 +82,7 @@ export class RichFilterSimple {
 		const filter = this.state();
 		return filter.fieldsArray().map((e) => ({
 			id: e.id,
-			component: FIELD_COMPONENT_MAP[e.type],
+			component: FIELD_COMPONENT_MAP[e.__type],
 			inputs: { id: e.id, state: filter },
 		}));
 	});

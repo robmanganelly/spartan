@@ -11,7 +11,7 @@ const buildTextField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.text,
+	__type: FieldTypes.text,
 	value,
 	operator,
 	__index: 0,
@@ -27,7 +27,7 @@ export const buildNumberField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.number,
+	__type: FieldTypes.number,
 	value,
 	operator,
 	__index: 0,
@@ -36,14 +36,14 @@ export const buildNumberField = <S extends string>(
 
 export const buildDateField = <S extends string>(
 	id: S,
-	value: Date | null,
+	value: Date,
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
 	},
 ) => ({
 	id,
-	type: FieldTypes.date,
+	__type: FieldTypes.date,
 	value,
 	operator,
 	__index: 0,
@@ -59,7 +59,7 @@ export const buildTimeField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.time,
+	__type: FieldTypes.time,
 	value,
 	operator,
 	__index: 0,
@@ -75,7 +75,7 @@ export const buildSelectField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.select,
+	__type: FieldTypes.select,
 	value,
 	operator,
 	__index: 0,
@@ -91,7 +91,7 @@ export const buildComboField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.combobox,
+	__type: FieldTypes.combobox,
 	value,
 	operator,
 	__index: 0,
@@ -106,7 +106,7 @@ export const buildBooleanField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.boolean,
+	__type: FieldTypes.boolean,
 	value,
 	// boolean fields are always "is" to maker the UX simpler
 	// double negatives like "is not false" can be confusing
@@ -125,7 +125,7 @@ export const buildRangeField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.range,
+	__type: FieldTypes.range,
 	value,
 	operator,
 	__index: 0,
@@ -141,7 +141,7 @@ export const buildDateRangeField = <S extends string>(
 	},
 ) => ({
 	id,
-	type: FieldTypes.daterange,
+	__type: FieldTypes.daterange,
 	value,
 	operator,
 	__index: 0,
@@ -160,7 +160,7 @@ export const fieldBuilder = {
 	[FieldTypes.combobox]: buildComboField,
 };
 
-type RFilterField = ReturnType<(typeof fieldBuilder)[IFieldType]>;
+export type RFilterField = ReturnType<(typeof fieldBuilder)[IFieldType]>;
 
 export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 	const _base = fields.reduce(
@@ -231,7 +231,8 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 			...s,
 			[fieldId]: {
 				...s[fieldId],
-				value: null,
+				// Date can never be null or the calendar component will break
+				value: s[fieldId].__type === FieldTypes.date ? new Date() : null,
 				operator: null,
 				__visible: false,
 			},
@@ -260,10 +261,19 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		_v.update((s) => {
 			const c = structuredClone(s);
 			for (const key in c) {
-				c[key as T[number]['id']] = { ..._base[key as T[number]['id']], __visible: false, __index: 0} satisfies T[number];
+				c[key as T[number]['id']] = {
+					..._base[key as T[number]['id']],
+					__visible: false,
+					__index: 0,
+				} satisfies T[number];
 			}
 			return c;
-		})
+		});
+	};
+
+	const fieldValue = <V extends T[number]['value']>(fieldId: T[number]['id']): V => {
+		const field = _v()[fieldId];
+		return field.value as V;
 	};
 
 	return {
@@ -278,6 +288,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		fieldsArray,
 		availableFields,
 		clear,
+		fieldValue,
 	};
 }
 
@@ -292,6 +303,7 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	fieldsArray: Signal<TFields[]>;
 	availableFields: Signal<TFields[]>;
 	clear(): void;
+	fieldValue<V extends TFields['value']>(fieldId: TId): V;
 }
 
 // Infer exact type from a specific buildFilterModel call

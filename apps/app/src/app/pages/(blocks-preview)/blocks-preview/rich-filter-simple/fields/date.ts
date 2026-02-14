@@ -9,9 +9,9 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { TimeOperators } from '../engine/operators';
-import { FieldClose } from '../utils/field-close';
-import { FieldLabel } from '../utils/field-label';
-import { FieldOperator } from '../utils/field-operator';
+import { FieldClose } from './utils/field-close';
+import { FieldLabel } from './utils/field-label';
+import { FieldOperator } from './utils/field-operator';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -47,7 +47,7 @@ import { FieldOperator } from '../utils/field-operator';
 					{{ _displayDate() }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-					<hlm-calendar [(date)]="selectedDate" />
+					<hlm-calendar [date]="controlValue()" (dateChange)="updateControlValue($event)" />
 				</hlm-popover-content>
 
 				<!-- close button -->
@@ -57,6 +57,7 @@ import { FieldOperator } from '../utils/field-operator';
 	`,
 })
 export class DateField {
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
@@ -64,11 +65,15 @@ export class DateField {
 
 	readonly operators = TimeOperators;
 
-	readonly selectedDate = signal<Date | undefined>(undefined);
+	readonly controlValue = computed(() => this.state().fieldValue(this.id())?? new Date());
+
+	updateControlValue(value: Date | null) {
+		this.state().patchFieldValue(this.id(), value);
+	}
 
 	protected readonly _displayDate = computed(() => {
-		const d = this.selectedDate();
-		if (!d) return 'Pick a date';
+		const d = this.controlValue();
+		if (!d || d instanceof Date === false)  return 'Pick a date';
 		return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 	});
 }
