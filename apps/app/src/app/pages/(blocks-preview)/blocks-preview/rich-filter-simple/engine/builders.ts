@@ -1,5 +1,5 @@
 import { computed, Signal, signal } from '@angular/core';
-import { IOperator, ITextOperator } from './operators';
+import { IOperator, ITextOperator, Operators } from './operators';
 import { FieldTypes, IFieldType } from './types';
 
 const buildTextField = <S extends string>(
@@ -101,7 +101,6 @@ export const buildComboField = <S extends string>(
 export const buildBooleanField = <S extends string>(
 	id: S,
 	value: boolean | null,
-	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
 	},
@@ -109,7 +108,10 @@ export const buildBooleanField = <S extends string>(
 	id,
 	type: FieldTypes.boolean,
 	value,
-	operator,
+	// boolean fields are always "is" to maker the UX simpler
+	// double negatives like "is not false" can be confusing
+	// this field is not intended for indeterminate boolean states, so we don't need "is not" or "is any"
+	operator: Operators.is,
 	__index: 0,
 	__visible: !!options?.initialVisible,
 });
@@ -176,9 +178,13 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 	const fieldsArray = computed(() => {
 		const v = _v();
 		const unsorted = fields.map((f) => v[f.id as T[number]['id']]).filter((f) => f.__visible);
-		// TODO use toSorted when target is updated to es2024
 		unsorted.sort((a, b) => a.__index - b.__index);
 		return unsorted;
+	});
+
+	const availableFields = computed(() => {
+		const v = _v();
+		return fields.map((f) => v[f.id as T[number]['id']]).filter((f) => !f.__visible);
 	});
 
 	// ===== whole state manipulation =====
@@ -250,6 +256,16 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		}));
 	};
 
+	const clear = () => {
+		_v.update((s) => {
+			const c = structuredClone(s);
+			for (const key in c) {
+				c[key as T[number]['id']] = { ..._base[key as T[number]['id']], __visible: false, __index: 0} satisfies T[number];
+			}
+			return c;
+		})
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -260,6 +276,8 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		// addfield is used to add back a "removed" field by resetting its value and operator to the initial state defined in _base
 		addField,
 		fieldsArray,
+		availableFields,
+		clear,
 	};
 }
 
@@ -272,6 +290,8 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	cleanField(fieldId: TId): void;
 	addField(fieldId: TId): void;
 	fieldsArray: Signal<TFields[]>;
+	availableFields: Signal<TFields[]>;
+	clear(): void;
 }
 
 // Infer exact type from a specific buildFilterModel call

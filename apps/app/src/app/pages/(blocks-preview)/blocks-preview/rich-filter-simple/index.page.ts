@@ -5,15 +5,15 @@ import { Operators } from './engine/operators';
 import { RichFilterSimple } from './rich-filter-simple';
 
 const filterModel = buildFilterModel(
-	f.text('name', null, Operators.includes, { initialVisible: true }),
-	f.number('age', null, Operators.greaterThan, { initialVisible: true }),
-	f.boolean('isActive', null, Operators.equals, { initialVisible: true }),
-	f.select('role', null, Operators.equals, { initialVisible: true }),
-	f.date('createdAt', null, Operators.lessThan, { initialVisible: true }),
-	f.daterange('dateRange', null, Operators.between, { initialVisible: true }),
-	f.range('priceRange', null, Operators.between, { initialVisible: true }),
-	f.time('time', null, Operators.lessThan, { initialVisible: true }),
-	f.combobox('country', null, Operators.equals, { initialVisible: true })
+	f.text('name', null, Operators.includes),
+	f.number('age', null, Operators.greaterThan),
+	f.boolean('isActive', null),
+	f.select('role', null, Operators.equals),
+	f.date('createdAt', null, Operators.lessThan),
+	f.daterange('dateRange', null, Operators.between),
+	f.range('priceRange', null, Operators.between),
+	f.time('time', null, Operators.lessThan),
+	f.combobox('country', null, Operators.equals)
 );
 
 @Component({

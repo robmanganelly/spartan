@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFilterX, lucideListFilterPlus } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { FilterModelRef } from './engine/builders';
 import { FieldTypes } from './engine/types';
@@ -18,18 +19,33 @@ import { ComboField } from "./fields/combo";
 
 @Component({
 	selector: 'spartan-simple-rich-filter',
-	imports: [HlmButtonImports, NgIcon, HlmIconImports, TextField, NumberField, BooleanField, RangeField, TimeField, DateField, DateRangeField, SelectField, ComboField],
+	imports: [HlmButtonImports, NgIcon, HlmIconImports, HlmDropdownMenuImports, TextField, NumberField, BooleanField, RangeField, TimeField, DateField, DateRangeField, SelectField, ComboField],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFilterX, lucideListFilterPlus })],
 	template: `
+		@let filter = state();
 		<div class="flex w-full gap-2">
 			<div class="flex flex-1 flex-wrap gap-2">
-				<button hlmBtn>
+			@let remaining = filter.availableFields();
+			@if(remaining.length){<button hlmBtn [hlmDropdownMenuTrigger]="addFilterMenu" align="start">
 					<ng-icon size="sm" hlm name="lucideListFilterPlus" />
 					Add Filter
 				</button>
+				<ng-template #addFilterMenu>
+					<hlm-dropdown-menu class="w-48">
+						<hlm-dropdown-menu-group>
+							@for (field of remaining; track field.id) {
+								<button hlmDropdownMenuItem (click)="filter.addField(field.id)">
+									<span>{{ field.id }}</span>
+								</button>
+							} @empty {
+								<div class="text-muted-foreground px-2 py-1.5 text-sm">No more filters</div>
+							}
+						</hlm-dropdown-menu-group>
+					</hlm-dropdown-menu>
+				</ng-template>}
 				<!--inputs will be shown here  -->
-				@for (e of state().fieldsArray(); track e.id) {
+				@for (e of filter.fieldsArray(); track e.id) {
 					@switch (e.type) {
 						@case (types.text) {
 							<spartan-rich-filter-text-field [label]="e.id"></spartan-rich-filter-text-field>
@@ -65,7 +81,7 @@ import { ComboField } from "./fields/combo";
 				}
 			</div>
 
-			<button hlmBtn>
+			<button hlmBtn (click)="filter.clear()">
 				<ng-icon size="sm" hlm name="lucideFilterX" />
 				Clear
 			</button>
@@ -77,5 +93,4 @@ export class RichFilterSimple {
 
 	readonly types = FieldTypes;
 
-	readonly compileFailure = 1;
 }
