@@ -12,6 +12,7 @@ import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { IdentityOperators, RangeOperators } from '../engine/operators';
+import { FieldClose } from '../utils/field-close';
 
 @Component({
 	selector: 'spartan-rich-filter-select-field',
@@ -28,6 +29,7 @@ import { IdentityOperators, RangeOperators } from '../engine/operators';
 		HlmSelectImports,
 		HlmPopoverImports,
 		HlmRangeSliderImports,
+		FieldClose,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -79,9 +81,7 @@ import { IdentityOperators, RangeOperators } from '../engine/operators';
 			</brn-select>
 
 			<!-- close button -->
-			<button hlmBtn variant="outline" size="icon">
-				<ng-icon name="lucideX" />
-			</button>
+			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
 	`,
 })

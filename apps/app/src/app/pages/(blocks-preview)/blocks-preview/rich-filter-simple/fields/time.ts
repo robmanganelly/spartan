@@ -11,6 +11,7 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTimeInputImports } from '@spartan-ng/helm/time-input';
 import { EqualityOperators, TimeOperators } from '../engine/operators';
+import { FieldClose } from '../utils/field-close';
 
 @Component({
 	selector: 'spartan-rich-filter-time-field',
@@ -25,6 +26,7 @@ import { EqualityOperators, TimeOperators } from '../engine/operators';
 		BrnSelectImports,
 		HlmSelectImports,
 		HlmTimeInputImports,
+		FieldClose,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -63,9 +65,7 @@ import { EqualityOperators, TimeOperators } from '../engine/operators';
 			<hlm-time-input class="rounded-none border-l-0 shadow-none" />
 
 			<!-- close button -->
-			<button hlmBtn variant="outline" size="icon">
-				<ng-icon name="lucideX" />
-			</button>
+			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
 	`,
 })

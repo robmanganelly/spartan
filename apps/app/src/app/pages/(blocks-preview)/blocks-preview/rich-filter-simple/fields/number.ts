@@ -11,6 +11,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { EqualityOperators } from '../engine/operators';
+import { FieldClose } from '../utils/field-close';
 
 @Component({
 	selector: 'spartan-rich-filter-number-field',
@@ -25,6 +26,7 @@ import { EqualityOperators } from '../engine/operators';
 		HlmInputImports,
 		BrnSelectImports,
 		HlmSelectImports,
+		FieldClose,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -62,9 +64,7 @@ import { EqualityOperators } from '../engine/operators';
 			<!-- numeric input -->
 			<input class="w-28" hlmInput [id]="fieldLabel()" type="number"/>
 			<!-- close button -->
-			<button hlmBtn variant="outline" size="icon">
-				<ng-icon name="lucideX" />
-			</button>
+			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
 	`,
 })

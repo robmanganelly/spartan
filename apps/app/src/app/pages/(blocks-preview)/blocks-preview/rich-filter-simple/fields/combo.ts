@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { NgIcon, provideIcons } from '@ng-icons/core';
+import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
@@ -13,24 +13,25 @@ import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { IdentityOperators } from '../engine/operators';
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
+import { FieldClose } from '../utils/field-close';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-field',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
-		NgIcon,
-		HlmInputGroupImports,
-		HlmButtonGroupImports,
-		HlmLabelImports,
-		HlmIconImports,
-		HlmButtonImports,
-		// HlmInputImports,
-		BrnSelectImports,
-		HlmSelectImports,
-		HlmPopoverImports,
-		HlmRangeSliderImports,
-		HlmComboboxImports,
-	],
+    HlmInputGroupImports,
+    HlmButtonGroupImports,
+    HlmLabelImports,
+    HlmIconImports,
+    HlmButtonImports,
+    // HlmInputImports,
+    BrnSelectImports,
+    HlmSelectImports,
+    HlmPopoverImports,
+    HlmRangeSliderImports,
+    HlmComboboxImports,
+    FieldClose
+],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
 	template: `
@@ -82,9 +83,7 @@ import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
 			</hlm-combobox>
 
 			<!-- close button -->
-			<button hlmBtn variant="outline" size="icon">
-				<ng-icon name="lucideX" />
-			</button>
+			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
 	`,
 })
