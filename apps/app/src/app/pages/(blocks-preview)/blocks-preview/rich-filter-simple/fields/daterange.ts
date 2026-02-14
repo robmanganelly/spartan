@@ -9,9 +9,9 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { RangeOperators } from '../engine/operators';
-import { FieldClose } from '../utils/field-close';
-import { FieldLabel } from '../utils/field-label';
-import { FieldOperator } from '../utils/field-operator';
+import { FieldClose } from './utils/field-close';
+import { FieldLabel } from './utils/field-label';
+import { FieldOperator } from './utils/field-operator';
 
 @Component({
 	selector: 'spartan-rich-filter-daterange-field',

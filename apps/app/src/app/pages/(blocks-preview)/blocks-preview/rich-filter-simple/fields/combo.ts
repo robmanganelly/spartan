@@ -10,26 +10,29 @@ import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
 import { IdentityOperators } from '../engine/operators';
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
-import { FieldClose } from '../utils/field-close';
-import { FieldLabel } from '../utils/field-label';
-import { FieldOperator } from '../utils/field-operator';
+import { FieldClose } from './utils/field-close';
+import { FieldLabel } from './utils/field-label';
+import { FieldOperator } from './utils/field-operator';
+import { FormsModule } from '@angular/forms';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-field',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
-    HlmInputGroupImports,
-    HlmButtonGroupImports,
-    HlmIconImports,
-    HlmButtonImports,
-    // HlmInputImports,
-    HlmPopoverImports,
-    HlmRangeSliderImports,
-    HlmComboboxImports,
-    FieldClose,
-    FieldLabel,
-    FieldOperator,
-],
+		HlmInputGroupImports,
+		HlmButtonGroupImports,
+		HlmIconImports,
+		HlmButtonImports,
+		// HlmInputImports,
+		HlmPopoverImports,
+		HlmRangeSliderImports,
+		HlmComboboxImports,
+		FieldClose,
+		FieldLabel,
+		FieldOperator,
+		// TODO replace with signals form as soon as spartan supports them
+		FormsModule,
+	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
 	template: `
@@ -48,7 +51,7 @@ import { FieldOperator } from '../utils/field-operator';
 			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- select field with options -->
-			<hlm-combobox>
+			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)">
 				<hlm-combobox-input placeholder="Select a framework" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
@@ -69,9 +72,16 @@ export class ComboField {
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
-	readonly fieldLabel = computed(() => 'boolean-' + this.id());
+	readonly fieldLabel = computed(() => 'combo-' + this.id());
 
 	readonly operators = IdentityOperators;
+
+	// todo fix typing to match real signature at compile time
+	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()));
+
+	protected updateControlValue(value: string) {
+		this.state().patchFieldValue(this.id(), value);
+	}
 
 	// TODO
 	readonly options = [
@@ -80,9 +90,4 @@ export class ComboField {
 		{ label: 'Option 3', value: 'option3' },
 		{ label: 'Option 4 a bit longer now it seems', value: 'option4' },
 	];
-
-	// todo make this more efficient with a map
-	protected _keyByValue(value: string): string {
-		return this.options.find((o) => o.value === value)?.label ?? value;
-	}
 }

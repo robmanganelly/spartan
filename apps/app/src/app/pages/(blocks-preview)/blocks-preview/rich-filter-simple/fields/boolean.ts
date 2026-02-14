@@ -1,28 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { FilterModelRef } from '../engine/builders';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
+import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
-import { IdentityOperators } from '../engine/operators';
-import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
-import { FieldClose } from "../utils/field-close";
-import { FieldLabel } from '../utils/field-label';
+import { FilterModelRef } from '../engine/builders';
+import { FieldClose } from './utils/field-close';
+import { FieldLabel } from './utils/field-label';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
-    HlmInputGroupImports,
-    HlmButtonGroupImports,
-    HlmIconImports,
-    HlmButtonImports,
-    HlmInputImports,
-    HlmCheckboxImports,
-    FieldClose,
-    FieldLabel,
-],
+		HlmInputGroupImports,
+		HlmButtonGroupImports,
+		HlmIconImports,
+		HlmButtonImports,
+		HlmInputImports,
+		HlmCheckboxImports,
+		FieldClose,
+		FieldLabel,
+	],
 	host: {},
 	template: `
 		<div
@@ -34,15 +33,12 @@ import { FieldLabel } from '../utils/field-label';
 			<!-- operator dropdown -->
 
 			<!-- boolean input -->
-			<div hlmButtonGroupSeparator ></div>
+			<div hlmButtonGroupSeparator></div>
 
-			<div hlmButtonGroupText class="bg-transparent dark:bg-input/30">
-				<hlm-checkbox [id]="fieldLabel()" />
+			<div hlmButtonGroupText class="dark:bg-input/30 bg-transparent">
+				<hlm-checkbox [id]="fieldLabel()" [checked]="controlValue()" (checkedChange)="updateControl($event)" />
 			</div>
 			<!-- close button -->
-			<!-- <button hlmBtn variant="outline" size="icon">
-				<ng-icon name="lucideX" />
-			</button> -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()"></spartan-rich-filter-field-close>
 		</div>
 	`,
@@ -53,4 +49,9 @@ export class BooleanField {
 
 	readonly fieldLabel = computed(() => 'boolean-' + this.id());
 
+	readonly controlValue = computed(() => this.state().fieldValue<boolean>(this.id()));
+
+	protected updateControl(value: boolean) {
+		this.state().patchFieldValue(this.id(), value);
+	}
 }
