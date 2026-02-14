@@ -12,6 +12,7 @@ import { TimeOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { DatePipe } from '@angular/common';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -27,10 +28,12 @@ import { FieldOperator } from './utils/field-operator';
 		FieldClose,
 		FieldLabel,
 		FieldOperator,
+		DatePipe
 	],
 	providers: [provideIcons({ lucideCalendar, lucideX })],
 	host: {},
 	template: `
+		@let value = controlValue();
 		<hlm-popover sideOffset="5" align="end">
 			<div
 				hlmButtonGroup
@@ -44,10 +47,10 @@ import { FieldOperator } from './utils/field-operator';
 				<!-- popover with calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline">
 					<ng-icon hlm name="lucideCalendar" size="sm" />
-					{{ _displayDate() }}
+					{{ value | date:'mediumDate' }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-					<hlm-calendar [date]="controlValue()" (dateChange)="updateControlValue($event)" />
+					<hlm-calendar [date]="value" (dateChange)="updateControlValue($event)" />
 				</hlm-popover-content>
 
 				<!-- close button -->
@@ -65,15 +68,9 @@ export class DateField {
 
 	readonly operators = TimeOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue(this.id())?? new Date());
+	readonly controlValue = computed(() => this.state().fieldValue<Date>(this.id())?? new Date());
 
 	updateControlValue(value: Date | null) {
 		this.state().patchFieldValue(this.id(), value);
 	}
-
-	protected readonly _displayDate = computed(() => {
-		const d = this.controlValue();
-		if (!d || d instanceof Date === false)  return 'Pick a date';
-		return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-	});
 }

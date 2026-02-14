@@ -38,7 +38,7 @@ import { FieldOperator } from './utils/field-operator';
 			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- time input -->
-			<hlm-time-input class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none" />
+			<hlm-time-input [displaySeconds]="true" class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none" [value]="controlValue()" (timeChange)="updateControlValue($event)" />
 
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
@@ -52,4 +52,22 @@ export class TimeField {
 	readonly fieldLabel = computed(() => 'time-' + this.id());
 
 	readonly operators = TimeOperators;
+
+	readonly controlValue = computed(() => {
+		const d = this.state().fieldValue<Date>(this.id()) ?? new Date();
+		let hours = d.getHours();
+		const minutes = d.getMinutes();
+		const seconds = d.getSeconds();
+		const period = hours >= 12 ? 'PM' : 'AM';
+		hours = hours % 12 || 12;
+		return { hours, minutes, seconds, period: period as 'AM' | 'PM' };
+	});
+
+	protected updateControlValue(value: { hours: number; minutes: number; seconds: number; period: string }) {
+		const d = new Date(this.state().fieldValue<Date>(this.id()) ?? new Date());
+		let hours = value.hours % 12;
+		if (value.period === 'PM') hours += 12;
+		d.setHours(hours, value.minutes, value.seconds, 0);
+		this.state().patchFieldValue(this.id(), d);
+	}
 }

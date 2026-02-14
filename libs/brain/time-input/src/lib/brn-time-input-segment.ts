@@ -50,6 +50,8 @@ export class BrnTimeInputSegment {
 				return this._timeInput.displayHours();
 			case 'minutes':
 				return this._timeInput.displayMinutes();
+			case 'seconds':
+				return this._timeInput.displaySeconds();
 			case 'period':
 				return this._timeInput.displayPeriod();
 		}
@@ -61,6 +63,8 @@ export class BrnTimeInputSegment {
 				return this._timeInput.value().hours;
 			case 'minutes':
 				return this._timeInput.value().minutes;
+			case 'seconds':
+				return this._timeInput.value().seconds;
 			case 'period':
 				return this._timeInput.value().period === 'AM' ? 0 : 1;
 		}
@@ -72,6 +76,8 @@ export class BrnTimeInputSegment {
 				return 1;
 			case 'minutes':
 				return 0;
+			case 'seconds':
+				return 0;
 			case 'period':
 				return 0;
 		}
@@ -82,6 +88,8 @@ export class BrnTimeInputSegment {
 			case 'hours':
 				return 12;
 			case 'minutes':
+				return 59;
+			case 'seconds':
 				return 59;
 			case 'period':
 				return 1;

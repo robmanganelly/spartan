@@ -29,14 +29,17 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 			<brn-time-input-segment hlm segment="hours" />
 			<span class="text-muted-foreground" aria-hidden="true">:</span>
 			<brn-time-input-segment hlm segment="minutes" />
+			@if(displaySeconds()){<span class="text-muted-foreground" aria-hidden="true">:</span>
+			<brn-time-input-segment hlm segment="seconds" />}
 			<brn-time-input-segment hlm segment="period" />
 		</brn-time-input>
 	`,
 })
 export class HlmTimeInput implements ControlValueAccessor {
 	public readonly userClass = input<ClassValue>('', { alias: 'class' });
+	readonly displaySeconds = input(false);
 
-	readonly value = model<BrnTimeValue>({ hours: 12, minutes: 0, period: 'AM' });
+	readonly value = model<BrnTimeValue>({ hours: 12, minutes: 0, seconds: 0, period: 'AM' });
 	readonly disabled = model(false);
 	readonly timeChange = output<BrnTimeValue>();
 

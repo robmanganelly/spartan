@@ -15,11 +15,12 @@ export type BrnTimePeriod = 'AM' | 'PM';
 export interface BrnTimeValue {
 	hours: number;
 	minutes: number;
+	seconds: number;
 	period: BrnTimePeriod;
 }
 
 /** Segment types that can be focused within the time input. */
-export type BrnTimeSegment = 'hours' | 'minutes' | 'period';
+export type BrnTimeSegment = 'hours' | 'minutes' | 'seconds' | 'period';
 
 let nextId = 0;
 
@@ -47,7 +48,7 @@ export class BrnTimeInput implements ControlValueAccessor {
 	readonly id = this._id.asReadonly();
 
 	/** The current time value. */
-	readonly value = model<BrnTimeValue>({ hours: 12, minutes: 0, period: 'AM' });
+	readonly value = model<BrnTimeValue>({ hours: 12, minutes: 0, seconds: 0, period: 'AM' });
 
 	/** Whether the input is disabled. */
 	readonly disabled = model(false);
@@ -66,6 +67,10 @@ export class BrnTimeInput implements ControlValueAccessor {
 
 	readonly displayMinutes = computed(() => {
 		return this.value().minutes.toString().padStart(2, '0');
+	});
+
+	readonly displaySeconds = computed(() => {
+		return this.value().seconds.toString().padStart(2, '0');
 	});
 
 	readonly displayPeriod = computed(() => this.value().period);
@@ -111,6 +116,11 @@ export class BrnTimeInput implements ControlValueAccessor {
 				next = { ...current, minutes: m };
 				break;
 			}
+			case 'seconds': {
+				const s = current.seconds >= 59 ? 0 : current.seconds + 1;
+				next = { ...current, seconds: s };
+				break;
+			}
 			case 'period': {
 				next = { ...current, period: current.period === 'AM' ? 'PM' : 'AM' };
 				break;
@@ -135,6 +145,11 @@ export class BrnTimeInput implements ControlValueAccessor {
 			case 'minutes': {
 				const m = current.minutes <= 0 ? 59 : current.minutes - 1;
 				next = { ...current, minutes: m };
+				break;
+			}
+			case 'seconds': {
+				const s = current.seconds <= 0 ? 59 : current.seconds - 1;
+				next = { ...current, seconds: s };
 				break;
 			}
 			case 'period': {
@@ -163,6 +178,12 @@ export class BrnTimeInput implements ControlValueAccessor {
 				const combined = (current.minutes % 10) * 10 + digit;
 				const m = combined <= 59 ? combined : digit;
 				this._updateValue({ ...current, minutes: m });
+				break;
+			}
+			case 'seconds': {
+				const combined = (current.seconds % 10) * 10 + digit;
+				const s = combined <= 59 ? combined : digit;
+				this._updateValue({ ...current, seconds: s });
 				break;
 			}
 			case 'period': {

@@ -52,7 +52,7 @@ export const buildDateField = <S extends string>(
 
 export const buildTimeField = <S extends string>(
 	id: S,
-	value: string | null,
+	value: Date,
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
