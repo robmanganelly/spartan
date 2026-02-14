@@ -12,6 +12,7 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { RangeOperators } from '../engine/operators';
+import { FieldClose } from '../utils/field-close';
 
 @Component({
 	selector: 'spartan-rich-filter-daterange-field',
@@ -27,6 +28,7 @@ import { RangeOperators } from '../engine/operators';
 		HlmSelectImports,
 		HlmPopoverImports,
 		HlmCalendarImports,
+		FieldClose,
 	],
 	providers: [provideIcons({ lucideCalendar, lucideX })],
 	host: {},
@@ -72,9 +74,7 @@ import { RangeOperators } from '../engine/operators';
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<button hlmBtn variant="outline" size="icon">
-					<ng-icon name="lucideX" />
-				</button>
+				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 			</div>
 		</hlm-popover>
 	`,

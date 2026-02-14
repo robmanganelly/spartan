@@ -11,6 +11,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { TextOperators } from '../engine/operators';
+import { FieldClose } from '../utils/field-close';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -25,6 +26,7 @@ import { TextOperators } from '../engine/operators';
 		HlmInputImports,
 		BrnSelectImports,
 		HlmSelectImports,
+		FieldClose,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -62,9 +64,7 @@ import { TextOperators } from '../engine/operators';
 			<!-- text input -->
 			<input class="w-40" hlmInput [id]="fieldLabel()" />
 			<!-- close button -->
-			<button hlmBtn variant="outline" size="icon">
-				<ng-icon name="lucideX" />
-			</button>
+			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
 	`,
 })

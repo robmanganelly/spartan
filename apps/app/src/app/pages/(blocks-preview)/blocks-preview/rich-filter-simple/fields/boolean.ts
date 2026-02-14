@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
+import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -11,23 +12,23 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { EqualityOperators, IdentityOperators } from '../engine/operators';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { FieldClose } from "../utils/field-close";
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	imports: [
-		NgIcon,
-		HlmInputGroupImports,
-		HlmButtonGroupImports,
-		HlmLabelImports,
-		HlmIconImports,
-		HlmButtonImports,
-		HlmInputImports,
-		BrnSelectImports,
-		HlmSelectImports,
-		HlmCheckboxImports,
-	],
-	providers: [provideIcons({ lucideLink2, lucideX })],
+    HlmInputGroupImports,
+    HlmButtonGroupImports,
+    HlmLabelImports,
+    HlmIconImports,
+    HlmButtonImports,
+    HlmInputImports,
+    BrnSelectImports,
+    HlmSelectImports,
+    HlmCheckboxImports,
+    FieldClose
+],
 	host: {},
 	template: `
 		<div
@@ -65,9 +66,10 @@ import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 				<hlm-checkbox [id]="fieldLabel()" />
 			</div>
 			<!-- close button -->
-			<button hlmBtn variant="outline" size="icon">
+			<!-- <button hlmBtn variant="outline" size="icon">
 				<ng-icon name="lucideX" />
-			</button>
+			</button> -->
+			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()"></spartan-rich-filter-field-close>
 		</div>
 	`,
 })
