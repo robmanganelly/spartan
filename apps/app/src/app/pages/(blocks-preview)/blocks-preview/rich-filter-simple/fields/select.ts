@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
+import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -37,7 +38,7 @@ import { IdentityOperators, RangeOperators } from '../engine/operators';
 		>
 			<!-- label -->
 			<div hlmButtonGroupText>
-				<label class="w-content" hlmLabel [for]="fieldLabel()">{{ label() }}</label>
+				<label class="w-content" hlmLabel [for]="fieldLabel()">{{ id() }}</label>
 			</div>
 			<!-- operator dropdown -->
 
@@ -85,9 +86,10 @@ import { IdentityOperators, RangeOperators } from '../engine/operators';
 	`,
 })
 export class SelectField {
-	readonly label = input.required<string>();
+	readonly id = input.required<string>();
+	readonly state = input.required<FilterModelRef>();
 
-	readonly fieldLabel = computed(() => 'range-' + this.label());
+	readonly fieldLabel = computed(() => 'select-' + this.id());
 
 	readonly operators = Object.entries(IdentityOperators).map(([key, value]) => ({ key, value }));
 

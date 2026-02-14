@@ -1,25 +1,38 @@
-import { KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, Type } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFilterX, lucideListFilterPlus } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { FilterModelRef } from './engine/builders';
-import { FieldTypes } from './engine/types';
+import { FieldTypes, IFieldType } from './engine/types';
 import { BooleanField } from './fields/boolean';
+import { ComboField } from './fields/combo';
 import { DateField } from './fields/date';
 import { DateRangeField } from './fields/daterange';
 import { NumberField } from './fields/number';
+import { RangeField } from './fields/range';
+import { SelectField } from './fields/select';
 import { TextField } from './fields/text';
 import { TimeField } from './fields/time';
-import { RangeField } from "./fields/range";
-import { SelectField } from "./fields/select";
-import { ComboField } from "./fields/combo";
+
+/** Maps each field type to the component class that renders it. */
+const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
+	[FieldTypes.text]: TextField,
+	[FieldTypes.number]: NumberField,
+	[FieldTypes.boolean]: BooleanField,
+	[FieldTypes.range]: RangeField,
+	[FieldTypes.time]: TimeField,
+	[FieldTypes.date]: DateField,
+	[FieldTypes.daterange]: DateRangeField,
+	[FieldTypes.select]: SelectField,
+	[FieldTypes.combobox]: ComboField,
+};
 
 @Component({
 	selector: 'spartan-simple-rich-filter',
-	imports: [HlmButtonImports, NgIcon, HlmIconImports, HlmDropdownMenuImports, TextField, NumberField, BooleanField, RangeField, TimeField, DateField, DateRangeField, SelectField, ComboField],
+	imports: [HlmButtonImports, NgIcon, HlmIconImports, HlmDropdownMenuImports, NgComponentOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFilterX, lucideListFilterPlus })],
 	template: `
@@ -44,40 +57,9 @@ import { ComboField } from "./fields/combo";
 						</hlm-dropdown-menu-group>
 					</hlm-dropdown-menu>
 				</ng-template>}
-				<!--inputs will be shown here  -->
-				@for (e of filter.fieldsArray(); track e.id) {
-					@switch (e.type) {
-						@case (types.text) {
-							<spartan-rich-filter-text-field [label]="e.id"></spartan-rich-filter-text-field>
-						}
-						@case (types.number) {
-							<spartan-rich-filter-number-field [label]="e.id"></spartan-rich-filter-number-field>
-						}
-						@case (types.boolean) {
-							<spartan-rich-filter-boolean-field [label]="e.id"></spartan-rich-filter-boolean-field>
-						}
-						@case (types.range) {
-							<spartan-rich-filter-range-field [label]="e.id"></spartan-rich-filter-range-field>
-						}
-						@case (types.time) {
-							<spartan-rich-filter-time-field [label]="e.id"></spartan-rich-filter-time-field>
-						}
-						@case (types.date) {
-							<spartan-rich-filter-date-field [label]="e.id"></spartan-rich-filter-date-field>
-						}
-						@case (types.daterange) {
-							<spartan-rich-filter-daterange-field [label]="e.id"></spartan-rich-filter-daterange-field>
-						}
-						@case (types.select) {
-							<spartan-rich-filter-select-field [label]="e.id"></spartan-rich-filter-select-field>
-						}
-						@case (types.combobox) {
-							<spartan-rich-filter-combo-field [label]="e.id"></spartan-rich-filter-combo-field>
-						}
-						<!-- @default {
-							<span>not yet implemented : {{ e.id }} : {{ e.type }}</span>
-						} -->
-					}
+				<!--inputs rendered programmatically  -->
+				@for (entry of fieldEntries(); track entry.id) {
+					<ng-container *ngComponentOutlet="entry.component; inputs: entry.inputs" />
 				}
 			</div>
 
@@ -91,6 +73,13 @@ import { ComboField } from "./fields/combo";
 export class RichFilterSimple {
 	readonly state = input.required<FilterModelRef>();
 
-	readonly types = FieldTypes;
-
+	/** Computed array of { component, inputs } entries for NgComponentOutlet. */
+	readonly fieldEntries = computed(() => {
+		const filter = this.state();
+		return filter.fieldsArray().map((e) => ({
+			id: e.id,
+			component: FIELD_COMPONENT_MAP[e.type],
+			inputs: { id: e.id, state: filter },
+		}));
+	});
 }

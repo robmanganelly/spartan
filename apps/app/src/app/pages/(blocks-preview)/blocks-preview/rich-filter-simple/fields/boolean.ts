@@ -36,7 +36,7 @@ import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 		>
 			<!-- label -->
 			<div hlmButtonGroupText>
-				<label class="w-content" hlmLabel [for]="fieldLabel()">{{ label() }}</label>
+				<label class="w-content" hlmLabel [for]="fieldLabel()">{{ id() }}</label>
 			</div>
 			<!-- operator dropdown -->
 
@@ -72,9 +72,10 @@ import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 	`,
 })
 export class BooleanField {
-	readonly label = input.required<string>();
+	readonly id = input.required<string>();
+	readonly state = input.required<FilterModelRef>();
 
-	readonly fieldLabel = computed(() => 'boolean-' + this.label());
+	readonly fieldLabel = computed(() => 'boolean-' + this.id());
 
 	readonly operators = Object.entries(IdentityOperators).map(([key, value]) => ({ key, value }));
 }
