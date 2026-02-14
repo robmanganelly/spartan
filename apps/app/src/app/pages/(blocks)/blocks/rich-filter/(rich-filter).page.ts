@@ -17,7 +17,7 @@ export const routeMeta: RouteMeta = {
 	},
 	template: `
 		<spartan-block-viewer
-		block="rich-filter-simple"
+		block="rich-filter"
 		title="A simple rich filter"
 		id="rich-filter-1" />
 	`,

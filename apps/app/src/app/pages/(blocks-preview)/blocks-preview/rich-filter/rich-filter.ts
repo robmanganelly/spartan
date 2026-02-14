@@ -31,7 +31,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 };
 
 @Component({
-	selector: 'spartan-simple-rich-filter',
+	selector: 'spartan-rich-filter',
 	imports: [HlmButtonImports, NgIcon, HlmIconImports, HlmDropdownMenuImports, NgComponentOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFunnel, lucideFunnelX, lucideFunnelPlus})],
@@ -64,17 +64,17 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 						</hlm-dropdown-menu>
 					</ng-template>
 				}
-				@if (active.length) {
-					<button variant="destructive" size="icon" hlmBtn (click)="filter.clear()">
-						<ng-icon size="sm" hlm name="lucideFunnelX" />
-					</button>
-				}
 			</div>
 			<!--ANYTHING HERE WILL BE OUTSIDE WRAPPING DIV -->
+			@if (active.length) {
+				<button variant="destructive" size="icon" hlmBtn (click)="filter.clear()">
+					<ng-icon size="sm" hlm name="lucideFunnelX" />
+				</button>
+			}
 		</div>
 	`,
 })
-export class RichFilterSimple {
+export class SpartanRichFilter {
 	readonly state = input.required<FilterModelRef>();
 
 	/** Computed array of { component, inputs } entries for NgComponentOutlet. */
