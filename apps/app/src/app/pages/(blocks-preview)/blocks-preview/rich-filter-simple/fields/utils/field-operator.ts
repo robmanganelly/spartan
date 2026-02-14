@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { FilterModelRef } from '../../engine/builders';
+import { IOperator } from '../../engine/operators';
 
 @Component({
 	selector: 'spartan-rich-filter-field-operator',
@@ -9,13 +11,10 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 	host: { style: 'display: contents' },
 	template: `
 		<brn-select
-			class="
-			[&>div>hlm-select-trigger>button]:border-l-none
-			[&>div>hlm-select-trigger>button]:border-r-none
-			inline-block [&>div>hlm-select-trigger>button]:rounded-none
-			"
+			class="[&>div>hlm-select-trigger>button]:border-l-none [&>div>hlm-select-trigger>button]:border-r-none inline-block [&>div>hlm-select-trigger>button]:rounded-none"
 			placeholder="Select an option"
-			[value]="_operators()[0].value"
+			[value]="controlValue()"
+			(valueChange)="updateControlValue($event)"
 		>
 			<hlm-select-trigger>
 				<hlm-select-value>
@@ -38,9 +37,25 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 	`,
 })
 export class FieldOperator {
+	readonly state = input.required<FilterModelRef>();
+
+	readonly fieldId = input.required<string>();
+
 	readonly operators = input.required<Record<string, string>>();
 
 	protected readonly _operators = computed(() =>
 		Object.entries(this.operators()).map(([key, value]) => ({ key, value })),
 	);
+
+	controlValue = computed(() => this.state().fieldOperator(this.fieldId()));
+
+	updateControlValue(value: IOperator | IOperator[] | undefined) {
+		console.log('Selected operator:', value);
+		if (value !== undefined) {
+			this.state().patchFieldOperator(this.fieldId(), Array.isArray(value) ? (value.at(0) as IOperator) : value);
+		} else {
+			// TODO check if this edge case is ever hit
+			throw new Error('Operator value is undefined');
+		}
+	}
 }

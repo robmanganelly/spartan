@@ -48,7 +48,7 @@ import { FormsModule } from '@angular/forms';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [operators]="operators" />
+			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 			<!-- select field with options -->
 			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)">

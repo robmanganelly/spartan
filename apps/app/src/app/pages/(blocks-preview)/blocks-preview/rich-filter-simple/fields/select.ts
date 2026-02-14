@@ -42,10 +42,15 @@ import { FieldOperator } from './utils/field-operator';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [operators]="operators" />
+			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 			<!-- select field with options -->
-			<brn-select class="inline-block [&>div>hlm-select-trigger>button]:rounded-none [&>div>hlm-select-trigger>button]:border-l-0" placeholder="Select an option" [value]="controlValue()" (valueChange)="updateControlValue($event)">
+			<brn-select
+				class="inline-block [&>div>hlm-select-trigger>button]:rounded-none [&>div>hlm-select-trigger>button]:border-l-0"
+				placeholder="Select an option"
+				[value]="controlValue()"
+				(valueChange)="updateControlValue($event)"
+			>
 				<hlm-select-trigger>
 					<hlm-select-value>
 						<div *brnSelectValue="let value">

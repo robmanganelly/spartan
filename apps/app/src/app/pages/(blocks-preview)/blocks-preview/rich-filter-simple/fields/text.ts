@@ -38,10 +38,16 @@ import { FormsModule } from '@angular/forms';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [operators]="operators" />
+			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 			<!-- text input -->
-			<input class="w-40" hlmInput [id]="fieldLabel()" [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)" />
+			<input
+				class="w-40"
+				hlmInput
+				[id]="fieldLabel()"
+				[ngModel]="controlValue()"
+				(ngModelChange)="updateControlValue($event)"
+			/>
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>

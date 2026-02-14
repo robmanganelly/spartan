@@ -28,7 +28,7 @@ import { DatePipe } from '@angular/common';
 		FieldClose,
 		FieldLabel,
 		FieldOperator,
-		DatePipe
+		DatePipe,
 	],
 	providers: [provideIcons({ lucideCalendar, lucideX })],
 	host: {},
@@ -42,12 +42,12 @@ import { DatePipe } from '@angular/common';
 				<!-- label -->
 				<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [operators]="operators" />
+				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 				<!-- popover with calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline">
 					<ng-icon hlm name="lucideCalendar" size="sm" />
-					{{ value | date:'mediumDate' }}
+					{{ value | date: 'mediumDate' }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
 					<hlm-calendar [date]="value" (dateChange)="updateControlValue($event)" />
@@ -60,7 +60,6 @@ import { DatePipe } from '@angular/common';
 	`,
 })
 export class DateField {
-
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
@@ -68,7 +67,7 @@ export class DateField {
 
 	readonly operators = TimeOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue<Date>(this.id())?? new Date());
+	readonly controlValue = computed(() => this.state().fieldValue<Date>(this.id()) ?? new Date());
 
 	updateControlValue(value: Date | null) {
 		this.state().patchFieldValue(this.id(), value);
