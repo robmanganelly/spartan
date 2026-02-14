@@ -44,12 +44,15 @@ import { DatePipe } from '@angular/common';
 				<spartan-rich-filter-field-operator [state] ="state()" [fieldId]="id()" [operators]="operators" />
 
 				<!-- popover with range calendar -->
-				<button hlmPopoverTrigger hlmBtn variant="outline" #popoverBtn>
+				<button hlmPopoverTrigger hlmBtn variant="outline" #dateRangeTrigger>
 					<ng-icon hlm name="lucideCalendar" size="sm" />
 					{{ startDate() | date: 'MMM d' }} - {{ endDate() | date: 'MMM d' }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-					<hlm-calendar-range
+				@let opts = options();
+				<hlm-calendar-range
+						[min]="opts.min"
+						[max]="opts.max"
 						[startDate]="startDate()"
 						(startDateChange)="updateStartDate($event)"
 						[endDate]="endDate()"
@@ -64,7 +67,7 @@ import { DatePipe } from '@angular/common';
 	`,
 })
 export class DateRangeField {
-	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('popoverBtn');
+	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateRangeTrigger');
 
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
@@ -74,6 +77,8 @@ export class DateRangeField {
 	readonly operators = RangeOperators;
 
 	readonly controlValue = computed(() => this.state().fieldValue<{ start: Date; end: Date } | null>(this.id()));
+
+	readonly options = computed(() => this.state().fieldMinMax(this.id()));
 
 	readonly startDate = computed(() => this.controlValue()?.start ?? new Date());
 	readonly endDate = computed(() => this.controlValue()?.end ?? new Date());

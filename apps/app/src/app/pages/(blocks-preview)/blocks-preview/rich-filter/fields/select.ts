@@ -54,13 +54,13 @@ import { FieldOperator } from './utils/field-operator';
 				<hlm-select-trigger>
 					<hlm-select-value>
 						<div *brnSelectValue="let value">
-							<span>{{ _keyByValue(value) }}</span>
+							<span>{{ optionMap().get(value) }}</span>
 						</div>
 					</hlm-select-value>
 				</hlm-select-trigger>
 				<hlm-select-content>
-					@for (option of options; track option.value) {
-						<hlm-option [value]="option.value">{{ option.key }}</hlm-option>
+					@for (option of options(); track option.value) {
+						<hlm-option [value]="option.value">{{ option.label }}</hlm-option>
 					}
 				</hlm-select-content>
 			</brn-select>
@@ -79,22 +79,20 @@ export class SelectField {
 	readonly operators = IdentityOperators;
 
 	// TODO
-	readonly options = [
-		{ key: 'O1', value: 'option1' },
-		{ key: 'Option 2', value: 'option2' },
-		{ key: 'Option 3', value: 'option3' },
-		{ key: 'Option 4 a bit longer now it seems', value: 'option4' },
-	];
+	readonly options = computed(()=>this.state().fieldOptions(this.id()))
+
+	readonly optionMap = computed(() => {
+		const map = new Map();
+		for (const option of this.options()) {
+			map.set(option.value, option.label);
+		}
+		return map;
+	})
 
 	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()));
 
 	protected updateControlValue(value: string | string[] | undefined) {
 		if (value == null) return;
 		this.state().patchFieldValue(this.id(), Array.isArray(value) ? value[0] : value);
-	}
-
-	// todo make this more efficient with a map
-	protected _keyByValue(value: string): string {
-		return this.options.find((o) => o.value === value)?.key ?? value;
 	}
 }

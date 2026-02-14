@@ -48,6 +48,9 @@ import { FormsModule } from '@angular/forms';
 				type="number"
 				[ngModel]="controlValue()"
 				(ngModelChange)="updateControlValue($event)"
+				[min]="options().min"
+				[max]="options().max"
+				[step]="options().step"
 			/>
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
@@ -64,8 +67,11 @@ export class NumberField {
 
 	readonly controlValue = computed(() => this.state().fieldValue<number>(this.id()) ?? 0);
 
+	readonly options = computed(() => this.state().fieldNumericOptions(this.id()))
+
 	protected updateControlValue(event: string) {
 		// html input of type number returns string, so we need to convert it to number
 		this.state().patchFieldValue(this.id(), +event);
 	}
+
 }

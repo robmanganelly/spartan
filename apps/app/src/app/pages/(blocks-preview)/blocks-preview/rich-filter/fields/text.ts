@@ -47,6 +47,7 @@ import { FormsModule } from '@angular/forms';
 				[id]="fieldLabel()"
 				[ngModel]="controlValue()"
 				(ngModelChange)="updateControlValue($event)"
+				[required]="fieldRequired()"
 			/>
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
@@ -62,6 +63,8 @@ export class TextField {
 	readonly operators = TextOperators;
 
 	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()) ?? '');
+
+	readonly fieldRequired = computed(() => this.state().fieldRequired(this.id()));
 
 	protected updateControlValue(value: string) {
 		this.state().patchFieldValue(this.id(), value);
