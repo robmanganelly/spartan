@@ -10,9 +10,10 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { IdentityOperators, RangeOperators } from '../engine/operators';
+import { IdentityOperators } from '../engine/operators';
 import { FieldClose } from '../utils/field-close';
 import { FieldLabel } from '../utils/field-label';
+import { FieldOperator } from '../utils/field-operator';
 
 @Component({
 	selector: 'spartan-rich-filter-select-field',
@@ -29,6 +30,7 @@ import { FieldLabel } from '../utils/field-label';
 		HlmRangeSliderImports,
 		FieldClose,
 		FieldLabel,
+		FieldOperator,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -40,29 +42,10 @@ import { FieldLabel } from '../utils/field-label';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-
-			<brn-select class="inline-block" placeholder="Select an option" [value]="operators[0].value">
-				<hlm-select-trigger>
-					<hlm-select-value>
-						<div *brnSelectValue="let value">
-							<span>{{ value }}</span>
-						</div>
-					</hlm-select-value>
-				</hlm-select-trigger>
-				<hlm-select-content class="!min-w-40">
-					@for (operator of operators; track operator.key) {
-						<hlm-option [value]="operator.value">
-							<span>
-								{{ operator.value }}
-							</span>
-							<span class="text-muted-foreground">{{ operator.key }}</span>
-						</hlm-option>
-					}
-				</hlm-select-content>
-			</brn-select>
+			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- select field with options -->
-			<brn-select class="inline-block" placeholder="Select an option" [value]="null">
+			<brn-select class="inline-block [&>div>hlm-select-trigger>button]:rounded-none [&>div>hlm-select-trigger>button]:border-l-0" placeholder="Select an option" [value]="null">
 				<hlm-select-trigger>
 					<hlm-select-value>
 						<div *brnSelectValue="let value">
@@ -88,7 +71,7 @@ export class SelectField {
 
 	readonly fieldLabel = computed(() => 'select-' + this.id());
 
-	readonly operators = Object.entries(IdentityOperators).map(([key, value]) => ({ key, value }));
+	readonly operators = IdentityOperators;
 
 	// TODO
 	readonly options = [

@@ -2,18 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { IdentityOperators } from '../engine/operators';
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
 import { FieldClose } from '../utils/field-close';
 import { FieldLabel } from '../utils/field-label';
+import { FieldOperator } from '../utils/field-operator';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-field',
@@ -24,13 +23,12 @@ import { FieldLabel } from '../utils/field-label';
     HlmIconImports,
     HlmButtonImports,
     // HlmInputImports,
-    BrnSelectImports,
-    HlmSelectImports,
     HlmPopoverImports,
     HlmRangeSliderImports,
     HlmComboboxImports,
     FieldClose,
     FieldLabel,
+    FieldOperator,
 ],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -41,35 +39,17 @@ import { FieldLabel } from '../utils/field-label';
 			[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none
 			[&>brn-select>div>hlm-select-trigger>button]:rounded-r-none
 			[&_hlm-input-group]:!rounded-none
+			[&_hlm-input-group]:!border-l-0
 			"
 		>
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-
-			<brn-select class="inline-block" placeholder="Select an option" [value]="operators[0].value">
-				<hlm-select-trigger>
-					<hlm-select-value>
-						<div *brnSelectValue="let value">
-							<span>{{ value }}</span>
-						</div>
-					</hlm-select-value>
-				</hlm-select-trigger>
-				<hlm-select-content class="!min-w-40">
-					@for (operator of operators; track operator.key) {
-						<hlm-option [value]="operator.value">
-							<span>
-								{{ operator.value }}
-							</span>
-							<span class="text-muted-foreground">{{ operator.key }}</span>
-						</hlm-option>
-					}
-				</hlm-select-content>
-			</brn-select>
+			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- select field with options -->
 			<hlm-combobox>
-				<hlm-combobox-input placeholder="Select a framework" class="rounded-l-none rounded-r-none" />
+				<hlm-combobox-input placeholder="Select a framework" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
 					<div hlmComboboxList>
@@ -91,7 +71,7 @@ export class ComboField {
 
 	readonly fieldLabel = computed(() => 'boolean-' + this.id());
 
-	readonly operators = Object.entries(IdentityOperators).map(([key, value]) => ({ key, value }));
+	readonly operators = IdentityOperators;
 
 	// TODO
 	readonly options = [
