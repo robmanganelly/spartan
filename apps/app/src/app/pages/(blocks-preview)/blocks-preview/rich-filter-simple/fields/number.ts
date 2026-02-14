@@ -38,10 +38,17 @@ import { FormsModule } from '@angular/forms';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [operators]="operators" />
+			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 			<!-- numeric input -->
-			<input class="w-28" hlmInput [id]="fieldLabel()" type="number" [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)" />
+			<input
+				class="w-28"
+				hlmInput
+				[id]="fieldLabel()"
+				type="number"
+				[ngModel]="controlValue()"
+				(ngModelChange)="updateControlValue($event)"
+			/>
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
@@ -57,7 +64,8 @@ export class NumberField {
 
 	readonly controlValue = computed(() => this.state().fieldValue<number>(this.id()) ?? 0);
 
-	protected updateControlValue(event: string) { // html input of type number returns string, so we need to convert it to number
-		this.state().patchFieldValue(this.id(), +(event));
+	protected updateControlValue(event: string) {
+		// html input of type number returns string, so we need to convert it to number
+		this.state().patchFieldValue(this.id(), +event);
 	}
 }

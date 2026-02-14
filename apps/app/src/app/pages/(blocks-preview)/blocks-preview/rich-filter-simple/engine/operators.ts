@@ -74,7 +74,7 @@ export const TimeOperators = {
 	notPast: 'npst',
 	before: 'bfr',
 	notBefore: 'nbfr',
-}
+} as const;
 
 export type ITimeOperator = typeof TimeOperators[keyof typeof TimeOperators];
 

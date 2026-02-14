@@ -41,7 +41,7 @@ import { DatePipe } from '@angular/common';
 				<!-- label -->
 				<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [operators]="operators" />
+				<spartan-rich-filter-field-operator [state] ="state()" [fieldId]="id()" [operators]="operators" />
 
 				<!-- popover with range calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline" #popoverBtn>
@@ -98,7 +98,7 @@ export class DateRangeField {
 		// close popover after selecting range;
 		// wrapped in promise to let change detection settle
 		Promise.resolve().then(() => {
-			this.popoverBtn()?.nativeElement.click()
+			this.popoverBtn()?.nativeElement.click();
 		});
 		// TODO: Does BrainPopoverTrigger expose a method to close the popover programmatically?
 	}

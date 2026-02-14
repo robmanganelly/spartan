@@ -276,6 +276,11 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		return field.value as V;
 	};
 
+	const fieldOperator = (fieldId: T[number]['id']): T[number]['operator'] => {
+		const field = _v()[fieldId];
+		return field.operator;
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -289,6 +294,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		availableFields,
 		clear,
 		fieldValue,
+		fieldOperator,
 	};
 }
 
@@ -304,6 +310,7 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	availableFields: Signal<TFields[]>;
 	clear(): void;
 	fieldValue<V extends TFields['value']>(fieldId: TId): V;
+	fieldOperator(fieldId: TId): TFields['operator'];
 }
 
 // Infer exact type from a specific buildFilterModel call

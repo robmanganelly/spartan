@@ -35,10 +35,15 @@ import { FieldOperator } from './utils/field-operator';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [operators]="operators" />
+			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 			<!-- time input -->
-			<hlm-time-input [displaySeconds]="true" class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none" [value]="controlValue()" (timeChange)="updateControlValue($event)" />
+			<hlm-time-input
+				[displaySeconds]="true"
+				class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none"
+				[value]="controlValue()"
+				(timeChange)="updateControlValue($event)"
+			/>
 
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
