@@ -8,11 +8,11 @@ import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmCalendarImports } from '@spartan-ng/helm/calendar';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
-import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { EqualityOperators, TimeOperators } from '../engine/operators';
 import { FieldClose } from '../utils/field-close';
+import { FieldLabel } from '../utils/field-label';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -21,7 +21,6 @@ import { FieldClose } from '../utils/field-close';
 		NgIcon,
 		HlmInputGroupImports,
 		HlmButtonGroupImports,
-		HlmLabelImports,
 		HlmIconImports,
 		HlmButtonImports,
 		BrnSelectImports,
@@ -29,6 +28,7 @@ import { FieldClose } from '../utils/field-close';
 		HlmPopoverImports,
 		HlmCalendarImports,
 		FieldClose,
+		FieldLabel,
 	],
 	providers: [provideIcons({ lucideCalendar, lucideX })],
 	host: {},
@@ -39,9 +39,7 @@ import { FieldClose } from '../utils/field-close';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<div hlmButtonGroupText>
-					<label class="w-content" hlmLabel [for]="fieldLabel()">{{ id() }}</label>
-				</div>
+				<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 				<!-- operator dropdown -->
 
 				<brn-select class="inline-block" placeholder="Select an option" [value]="operators[0].value">
