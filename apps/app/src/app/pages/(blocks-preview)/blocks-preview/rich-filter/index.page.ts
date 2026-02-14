@@ -17,8 +17,8 @@ const filterModel = buildFilterModel(
 	f.boolean('isActive', true),
 	f.select('role', null, Operators.is, { options: roleOptions}),
 	f.date('createdAt', new Date(), Operators.lessThan, { max: new Date() }),
-	f.daterange('dateRange', null, Operators.between, { max: new Date() }),
-	f.range('priceRange', null, Operators.between),
+	f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, { max: new Date() }),
+	f.range('priceRange', null, Operators.between, { min: -100, max: 100 }),
 	f.time('time', new Date(), Operators.notPast),
 	f.combobox('country', '', Operators.is, { options: []})
 );

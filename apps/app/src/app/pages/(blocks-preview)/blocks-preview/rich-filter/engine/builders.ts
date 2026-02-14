@@ -176,7 +176,7 @@ export const buildRangeField = <S extends string>(
 
 export const buildDateRangeField = <S extends string>(
 	id: S,
-	value: { start: Date; end: Date } | null,
+	value: { start: Date; end: Date },
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
@@ -343,26 +343,26 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 			return { min: null, max: null, step: null };
 		} else {
 			return {
-				min: field.__min as number | null,
-				max: field.__max as number | null,
-				step: field.__step as number | null,
+				min: field.__min ?? null,
+				max: field.__max ?? null,
+				step: field.__step ?? null,
 			};
 		}
 	};
 
-	const fieldMinMax = <MinMax>(
+	const fieldMinMax = <K extends IFieldType = IFieldType, MinMax = unknown>(
 		fieldId: T[number]['id'],
-	): MinMax extends { __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null } => {
+	): MinMax extends { __type: K, __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null } => {
 		const field = _v()[fieldId] as T[number] & { __min?: unknown; __max?: unknown };
 		if (!('__min' in field) || !('__max' in field)) {
-			return { min: null, max: null } as MinMax extends { __min: infer Min; __max: infer Max }
+			return { min: null, max: null } as MinMax extends { __type: K, __min: infer Min; __max: infer Max }
 				? { min: Min; max: Max }
 				: { min: null; max: null };
 		}
 		return {
 			min: field.__min,
 			max: field.__max,
-		} as MinMax extends { __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
+		} as MinMax extends { __type: K, __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
 	};
 
 	const fieldRequired = (fieldId: T[number]['id']): boolean => {
@@ -407,9 +407,9 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	fieldOperator(fieldId: TId): TFields['operator'];
 	fieldOptions(fieldId: TId): TFields extends { __options: infer O } ? O : never;
 	fieldNumericOptions(fieldId: TId): { min: number | null; max: number | null; step: number | null };
-	fieldMinMax(
+	fieldMinMax<K extends IFieldType = IFieldType, MinMax = unknown>(
 		fieldId: TId,
-	): TFields extends { __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
+	): MinMax extends { __type: K, __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
 	fieldRequired(fieldId: TId): boolean;
 }
 

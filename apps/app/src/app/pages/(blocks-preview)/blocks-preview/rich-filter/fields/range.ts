@@ -12,6 +12,7 @@ import { RangeOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FieldTypes } from '../engine/types';
 
 @Component({
 	selector: 'spartan-rich-filter-range-field',
@@ -47,7 +48,13 @@ import { FieldOperator } from './utils/field-operator';
 				</button>
 				<hlm-popover-content class="rounded-xl p-0 text-sm" *hlmPopoverPortal="let ctx">
 					<div class="p-4 text-sm">
-						<hlm-range-slider [value]="controlValue()" (valueChange)="updateControlValue($event)" />
+						@let opts = options();
+						<hlm-range-slider
+							[min]="opts.min"
+							[max]="opts.max"
+							[value]="controlValue()"
+							(valueChange)="updateControlValue($event)"
+						/>
 					</div>
 				</hlm-popover-content>
 
@@ -65,15 +72,20 @@ export class RangeField {
 
 	readonly operators = RangeOperators;
 
+	readonly options = computed(() => this.state().fieldMinMax<typeof FieldTypes.daterange>(this.id()));
+
 	readonly controlValue = computed<RangeValue>(() => {
 		const v = this.state().fieldValue<{ min: number; max: number } | null>(this.id());
-		return v ? [v.min, v.max] : [0, 100];
+		const { min, max } = this.options();
+		return v ? [v.min, v.max] : [min ?? 0, max ?? 100];
 	});
+
 
 	protected readonly _displayRange = computed(() => {
 		const [low, high] = this.controlValue();
-		return `${low} - ${high}`;
+		return `${low >= 0 ? low : `(${low})`} - ${high >= 0 ? high : `(${high})`}`;
 	});
+
 
 	protected updateControlValue(value: RangeValue) {
 		this.state().patchFieldValue(this.id(), { min: value[0], max: value[1] });
