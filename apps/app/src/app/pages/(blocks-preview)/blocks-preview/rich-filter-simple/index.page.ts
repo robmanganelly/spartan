@@ -7,7 +7,7 @@ import { filterParser } from './engine/parser';
 
 const filterModel = buildFilterModel(
 	f.text('name', null, Operators.includes),
-	f.number('age', null, Operators.greaterThan),
+	f.number('age', 0, Operators.greaterThan),
 	f.boolean('isActive', null),
 	f.select('role', null, Operators.equals),
 	f.date('createdAt', new Date(), Operators.lessThan),
