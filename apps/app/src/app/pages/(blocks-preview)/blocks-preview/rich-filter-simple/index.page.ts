@@ -13,7 +13,7 @@ const filterModel = buildFilterModel(
 	f.date('createdAt', new Date(), Operators.lessThan),
 	f.daterange('dateRange', null, Operators.between),
 	f.range('priceRange', null, Operators.between),
-	f.time('time', null, Operators.lessThan),
+	f.time('time', new Date(), Operators.lessThan),
 	f.combobox('country', null, Operators.equals)
 );
 
@@ -45,7 +45,6 @@ const filterModel = buildFilterModel(
 export default class RichFilterSimplePage {
 
 	readonly filterState = filterModel;
-
 
 	readonly parserFn = filterParser;
 

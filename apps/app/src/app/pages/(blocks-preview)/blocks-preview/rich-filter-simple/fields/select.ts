@@ -45,7 +45,7 @@ import { FieldOperator } from './utils/field-operator';
 			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- select field with options -->
-			<brn-select class="inline-block [&>div>hlm-select-trigger>button]:rounded-none [&>div>hlm-select-trigger>button]:border-l-0" placeholder="Select an option" [value]="null">
+			<brn-select class="inline-block [&>div>hlm-select-trigger>button]:rounded-none [&>div>hlm-select-trigger>button]:border-l-0" placeholder="Select an option" [value]="controlValue()" (valueChange)="updateControlValue($event)">
 				<hlm-select-trigger>
 					<hlm-select-value>
 						<div *brnSelectValue="let value">
@@ -80,6 +80,13 @@ export class SelectField {
 		{ key: 'Option 3', value: 'option3' },
 		{ key: 'Option 4 a bit longer now it seems', value: 'option4' },
 	];
+
+	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()));
+
+	protected updateControlValue(value: string | string[] | undefined) {
+		if (value == null) return;
+		this.state().patchFieldValue(this.id(), Array.isArray(value) ? value[0] : value);
+	}
 
 	// todo make this more efficient with a map
 	protected _keyByValue(value: string): string {

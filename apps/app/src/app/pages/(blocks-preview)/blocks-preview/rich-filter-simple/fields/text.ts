@@ -11,6 +11,7 @@ import { TextOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FormsModule } from '@angular/forms';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -24,6 +25,8 @@ import { FieldOperator } from './utils/field-operator';
 		FieldClose,
 		FieldLabel,
 		FieldOperator,
+		// todo replace with signals form as soon as spartan supports them
+		FormsModule,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -38,7 +41,7 @@ import { FieldOperator } from './utils/field-operator';
 			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- text input -->
-			<input class="w-40" hlmInput [id]="fieldLabel()" />
+			<input class="w-40" hlmInput [id]="fieldLabel()" [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)" />
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
@@ -51,4 +54,10 @@ export class TextField {
 	readonly fieldLabel = computed(() => 'text-' + this.id());
 
 	readonly operators = TextOperators;
+
+	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()) ?? '');
+
+	protected updateControlValue(value: string) {
+		this.state().patchFieldValue(this.id(), value);
+	}
 }

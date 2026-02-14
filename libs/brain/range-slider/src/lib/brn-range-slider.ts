@@ -88,6 +88,13 @@ export class BrnRangeSlider implements ControlValueAccessor, OnInit {
 	public readonly lowThumbEl = signal<ElementRef<HTMLElement> | null>(null);
 	public readonly highThumbEl = signal<ElementRef<HTMLElement> | null>(null);
 
+	/**
+	 * @internal Tracks which role ('low'|'high') the currently-dragged thumb
+	 * controls. After a crossover sort, this flips so the drag follows the pointer.
+	 * Mirrors Radix's `valueIndexToChangeRef`.
+	 */
+	public readonly activeThumb = signal<'low' | 'high'>('low');
+
 	ngOnInit(): void {
 		const [low, high] = this.value();
 		const clampedLow = clamp(low, [this.min(), this.max()]);
@@ -120,7 +127,13 @@ export class BrnRangeSlider implements ControlValueAccessor, OnInit {
 		this._changeDetectorRef.detectChanges();
 	}
 
-	/** Set the value for a specific thumb ('low' or 'high'), snapping to step. */
+	/**
+	 * Set the value for a specific thumb, snapping to step.
+	 * Follows the Radix/shadcn approach: thumbs can cross over each other.
+	 * Values are always sorted so value[0] <= value[1]. After sorting,
+	 * activeThumb is updated to where the dragged value ended up, so
+	 * subsequent drag events follow the pointer correctly across crossover.
+	 */
 	setThumbValue(thumb: 'low' | 'high', rawValue: number): void {
 		const decimalCount = getDecimalCount(this.step());
 		const snapped = roundValue(
@@ -128,15 +141,15 @@ export class BrnRangeSlider implements ControlValueAccessor, OnInit {
 			decimalCount,
 		);
 
-		const minGap = this._computeMinValueGap();
+		const clamped = clamp(snapped, [this.min(), this.max()]);
 		const [low, high] = this.value();
-		let newValue: RangeValue;
 
-		if (thumb === 'low') {
-			newValue = [clamp(snapped, [this.min(), high - minGap]), high];
-		} else {
-			newValue = [low, clamp(snapped, [low + minGap, this.max()])];
-		}
+		// Place the new value at the thumb's index, then sort so [0] <= [1].
+		const unsorted: RangeValue = thumb === 'low' ? [clamped, high] : [low, clamped];
+		const newValue: RangeValue = [Math.min(unsorted[0], unsorted[1]), Math.max(unsorted[0], unsorted[1])];
+
+		// Track where the dragged value landed after sorting (Radix: valueIndexToChangeRef)
+		this.activeThumb.set(newValue[0] === clamped ? 'low' : 'high');
 
 		this.value.set(newValue);
 		this.valueChange.emit(newValue);
@@ -149,28 +162,6 @@ export class BrnRangeSlider implements ControlValueAccessor, OnInit {
 		return Math.abs(rawValue - low) <= Math.abs(rawValue - high) ? 'low' : 'high';
 	}
 
-	/**
-	 * Compute the minimum value gap between thumbs based on their physical size
-	 * relative to the track width, so the right edge of the low thumb never
-	 * overlaps the left edge of the high thumb.
-	 */
-	private _computeMinValueGap(): number {
-		const trackEl = this.track()?.elementRef.nativeElement;
-		const thumbEl = this.lowThumbEl()?.nativeElement ?? this.highThumbEl()?.nativeElement;
-
-		if (!trackEl || !thumbEl) return this.step();
-
-		const trackWidth = trackEl.getBoundingClientRect().width;
-		if (trackWidth <= 0) return this.step();
-
-		const thumbWidth = thumbEl.offsetWidth;
-		const valueRange = this.max() - this.min();
-		const minGapFromSize = (thumbWidth / trackWidth) * valueRange;
-
-		// Round up to nearest step so values stay on the step grid
-		const stepsNeeded = Math.ceil(minGapFromSize / this.step());
-		return Math.max(this.step(), stepsNeeded * this.step());
-	}
 }
 
 function roundValue(value: number, decimalCount: number): number {

@@ -11,6 +11,7 @@ import { EqualityOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FormsModule } from '@angular/forms';
 
 @Component({
 	selector: 'spartan-rich-filter-number-field',
@@ -24,6 +25,8 @@ import { FieldOperator } from './utils/field-operator';
 		FieldClose,
 		FieldLabel,
 		FieldOperator,
+		// todo replace with signals form as soon as spartan supports them
+		FormsModule,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -38,7 +41,7 @@ import { FieldOperator } from './utils/field-operator';
 			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- numeric input -->
-			<input class="w-28" hlmInput [id]="fieldLabel()" type="number"/>
+			<input class="w-28" hlmInput [id]="fieldLabel()" type="number" [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)" />
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
 		</div>
@@ -51,4 +54,10 @@ export class NumberField {
 	readonly fieldLabel = computed(() => 'number-' + this.id());
 
 	readonly operators = EqualityOperators;
+
+	readonly controlValue = computed(() => this.state().fieldValue<number>(this.id()) ?? 0);
+
+	protected updateControlValue(event: string) { // html input of type number returns string, so we need to convert it to number
+		this.state().patchFieldValue(this.id(), +(event));
+	}
 }

@@ -79,7 +79,11 @@ export class BrnRangeSliderThumb {
 
 		pointerdown
 			.pipe(
-				switchMap(() => pointermove.pipe(takeUntil(pointerup))),
+				switchMap(() => {
+					// Set the active thumb on drag start so crossover tracking works
+					this._slider.activeThumb.set(this.thumb());
+					return pointermove.pipe(takeUntil(pointerup));
+				}),
 				takeUntilDestroyed(),
 			)
 			.subscribe(this._dragThumb.bind(this));
@@ -100,7 +104,8 @@ export class BrnRangeSliderThumb {
 		const percentage = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
 		const rawValue = this._slider.min() + (this._slider.max() - this._slider.min()) * percentage;
 
-		this._slider.setThumbValue(this.thumb(), rawValue);
+		// Use activeThumb (which tracks crossover) instead of the fixed thumb() input
+		this._slider.setThumbValue(this._slider.activeThumb(), rawValue);
 	}
 
 	@HostListener('keydown', ['$event'])

@@ -7,7 +7,7 @@ import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
-import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
+import { HlmRangeSliderImports, RangeValue } from '@spartan-ng/helm/range-slider';
 import { RangeOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
@@ -42,26 +42,12 @@ import { FieldOperator } from './utils/field-operator';
 				<spartan-rich-filter-field-operator [operators]="operators" />
 
 				<!-- popover with slider -->
-				<button id="edit-profile" variant="outline" hlmPopoverTrigger hlmBtn variant="outline">
-					<!-- <ng-icon hlm name="lucideChevronDown" size="sm" /> -->
-					10 - 250
+				<button variant="outline" hlmPopoverTrigger hlmBtn variant="outline">
+					{{ _displayRange() }}
 				</button>
 				<hlm-popover-content class="rounded-xl p-0 text-sm" *hlmPopoverPortal="let ctx">
-					<!-- <div class="border-input border-b px-4 py-3"> -->
-					<!-- <div class="text-sm font-medium">Agent Tasks</div> -->
-					<!-- </div> -->
 					<div class="p-4 text-sm">
-						<hlm-range-slider />
-						<!-- <textarea
-							hlmInput
-							placeholder="Describe your task in natural language."
-							class="mb-4 min-h-16 resize-none"
-						></textarea>
-						<p class="mb-2 font-medium">Start a new task with Copilot</p>
-						<p class="text-muted-foreground">
-							Describe your task in natural language. Copilot will work in the background and open a pull request for
-							your review.
-						</p> -->
+						<hlm-range-slider [value]="controlValue()" (valueChange)="updateControlValue($event)" />
 					</div>
 				</hlm-popover-content>
 
@@ -78,4 +64,18 @@ export class RangeField {
 	readonly fieldLabel = computed(() => 'range-' + this.id());
 
 	readonly operators = RangeOperators;
+
+	readonly controlValue = computed<RangeValue>(() => {
+		const v = this.state().fieldValue<{ min: number; max: number } | null>(this.id());
+		return v ? [v.min, v.max] : [0, 100];
+	});
+
+	protected readonly _displayRange = computed(() => {
+		const [low, high] = this.controlValue();
+		return `${low} - ${high}`;
+	});
+
+	protected updateControlValue(value: RangeValue) {
+		this.state().patchFieldValue(this.id(), { min: value[0], max: value[1] });
+	}
 }
