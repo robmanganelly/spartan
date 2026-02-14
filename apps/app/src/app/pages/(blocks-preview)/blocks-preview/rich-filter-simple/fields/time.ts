@@ -2,16 +2,15 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTimeInputImports } from '@spartan-ng/helm/time-input';
-import { EqualityOperators, TimeOperators } from '../engine/operators';
+import { TimeOperators } from '../engine/operators';
 import { FieldClose } from '../utils/field-close';
 import { FieldLabel } from '../utils/field-label';
+import { FieldOperator } from '../utils/field-operator';
 
 @Component({
 	selector: 'spartan-rich-filter-time-field',
@@ -21,11 +20,10 @@ import { FieldLabel } from '../utils/field-label';
 		HlmButtonGroupImports,
 		HlmIconImports,
 		HlmButtonImports,
-		BrnSelectImports,
-		HlmSelectImports,
 		HlmTimeInputImports,
 		FieldClose,
 		FieldLabel,
+		FieldOperator,
 	],
 	providers: [provideIcons({ lucideLink2, lucideX })],
 	host: {},
@@ -37,29 +35,10 @@ import { FieldLabel } from '../utils/field-label';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
 			<!-- operator dropdown -->
-
-			<brn-select class="inline-block" placeholder="Select an option" [value]="operators[0].value">
-				<hlm-select-trigger>
-					<hlm-select-value>
-						<div *brnSelectValue="let value">
-							<span>{{ value }}</span>
-						</div>
-					</hlm-select-value>
-				</hlm-select-trigger>
-				<hlm-select-content class="!min-w-40">
-					@for (operator of operators; track operator.key) {
-						<hlm-option [value]="operator.value">
-							<span>
-								{{ operator.value }}
-							</span>
-							<span class="text-muted-foreground">{{ operator.key }}</span>
-						</hlm-option>
-					}
-				</hlm-select-content>
-			</brn-select>
+			<spartan-rich-filter-field-operator [operators]="operators" />
 
 			<!-- time input -->
-			<hlm-time-input class="rounded-none border-l-0 shadow-none" />
+			<hlm-time-input class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none" />
 
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
@@ -72,5 +51,5 @@ export class TimeField {
 
 	readonly fieldLabel = computed(() => 'time-' + this.id());
 
-	readonly operators = Object.entries(TimeOperators).map(([key, value]) => ({ key, value }));
+	readonly operators = TimeOperators;
 }

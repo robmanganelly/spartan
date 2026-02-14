@@ -40,5 +40,5 @@ export default class RichFilterSimplePage {
 
 	filterState = filterModel;
 
-	recompileFailure = 4;
+	recompileFailure = 7;
 }
