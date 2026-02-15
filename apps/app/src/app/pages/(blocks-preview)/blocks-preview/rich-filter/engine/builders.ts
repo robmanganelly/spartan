@@ -1,6 +1,7 @@
-import { computed, ResourceRef, Signal, signal } from '@angular/core';
+import { computed, ResourceRef, Signal, signal, WritableSignal } from '@angular/core';
 import { IEqualityOperator, IIdentityOperator, IOperator, ITextOperator, ITimeOperator, Operators } from './operators';
 import { FieldTypes, IFieldType } from './types';
+import { HttpResourceOptions, HttpResourceRequest } from '@angular/common/http';
 
 const buildTextField = <S extends string>(
 	id: S,
@@ -122,14 +123,18 @@ export const buildComboField = <S extends string>(
 	__placeholder: options?.placeholder,
 });
 
-export const buildComboFieldAsync = <S extends string, R>(
+export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>(
 	id: S,
 	value: string,
 	operator: IIdentityOperator,
 	options: {
 		initialVisible?: boolean;
-		resource: ResourceRef<R>
 		placeholder?: string;
+		resourceOptions:
+			| HttpResourceOptions<R extends Array<infer U> ? U : R[], unknown>
+			| Signal<HttpResourceOptions<R extends Array<infer U> ? U[] : R[], unknown>>;
+		resourceRequest: HttpResourceRequest | Signal<HttpResourceRequest>;
+		itemToString?: (item: R extends Array<infer U> ? U : R) => string;
 	},
 ) => ({
 	id,
@@ -138,8 +143,10 @@ export const buildComboFieldAsync = <S extends string, R>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
-	__resourceRef: options?.resource,
 	__placeholder: options?.placeholder,
+	__resourceOptions: options?.resourceOptions,
+	__resourceRequest: options?.resourceRequest,
+	__itemToString: options.itemToString,
 });
 
 export const buildBooleanField = <S extends string>(
@@ -399,6 +406,42 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		return field.__resourceRef;
 	};
 
+	const fieldSearch = (fieldId: T[number]['id']): WritableSignal<string> => {
+		const field = _v()[fieldId] as T[number] & { __search?: WritableSignal<string> };
+		if (!field.__search) {
+			throw new Error(`Field with id ${fieldId} does not have a search signal`);
+		}
+		return field.__search;
+	};
+
+	const fieldItemToString = <I = unknown>(fieldId: T[number]['id']): ((item: I) => string) => {
+		const field = _v()[fieldId] as T[number] & { __itemToString?: (item: I) => string };
+		return field.__itemToString ?? ((item: I) => String(item ?? ''));
+	};
+
+	const fieldResourceOptions = <R = unknown, K = unknown>(
+		fieldId: T[number]['id']): HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>> => {
+		const field = _v()[fieldId]
+		if (field.__type !== FieldTypes.asyncCombobox) {
+			throw new Error(`Field with id ${fieldId} is not an async combobox field`);
+		}
+		if (!field.__resourceOptions) {
+			throw new Error(`Field with id ${fieldId} does not have resource options`);
+		}
+		return field.__resourceOptions as HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>>;
+	}
+
+	const fieldResourceRequest = (fieldId: T[number]['id']): HttpResourceRequest | Signal<HttpResourceRequest> => {
+		const field = _v()[fieldId]
+		if (field.__type !== FieldTypes.asyncCombobox) {
+			throw new Error(`Field with id ${fieldId} is not an async combobox field`);
+		}
+		if (!field.__resourceRequest) {
+			throw new Error(`Field with id ${fieldId} does not have a resource request`);
+		}
+		return field.__resourceRequest as HttpResourceRequest | Signal<HttpResourceRequest>;
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -418,7 +461,9 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		fieldMinMax,
 		fieldRequired,
 		fieldPlaceholder,
-		fieldResource,
+		fieldItemToString,
+		fieldResourceOptions,
+		fieldResourceRequest,
 	};
 }
 
@@ -444,7 +489,9 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 		: { min: null; max: null };
 	fieldRequired(fieldId: TId): boolean;
 	fieldPlaceholder<K = string>(fieldId: TId): K;
-	fieldResource<R = unknown>(fieldId: TId): ResourceRef<R>;
+	fieldItemToString<I = unknown>(fieldId: TId): (item: I) => string;
+	fieldResourceOptions<R = unknown[], K = unknown>(fieldId: TId): HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>>;
+  fieldResourceRequest(fieldId: TId): HttpResourceRequest | Signal<HttpResourceRequest>;
 }
 
 // Infer exact type from a specific buildFilterModel call

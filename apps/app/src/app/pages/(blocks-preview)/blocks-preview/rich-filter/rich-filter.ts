@@ -16,6 +16,7 @@ import { RangeField } from './fields/range';
 import { SelectField } from './fields/select';
 import { TextField } from './fields/text';
 import { TimeField } from './fields/time';
+import { ComboAsyncField } from './fields/combo-async';
 
 /** Maps each field type to the component class that renders it. */
 const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
@@ -28,6 +29,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 	[FieldTypes.daterange]: DateRangeField,
 	[FieldTypes.select]: SelectField,
 	[FieldTypes.combobox]: ComboField,
+	[FieldTypes.asyncCombobox]: ComboAsyncField,
 };
 
 @Component({
