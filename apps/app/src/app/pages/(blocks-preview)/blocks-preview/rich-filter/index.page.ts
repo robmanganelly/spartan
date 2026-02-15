@@ -2,8 +2,9 @@ import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 import { buildFilterModel, fieldBuilder as f } from './engine/builders';
 import { Operators } from './engine/operators';
-import { SpartanRichFilter } from './rich-filter';
 import { filterParser } from './engine/parser';
+import { SpartanRichFilter } from './rich-filter';
+import { QueryToken } from './engine/constants';
 
 const roleOptions = [
 	{ label: 'Admin', value: 'admin' },
@@ -24,17 +25,79 @@ const comboboxOptions = [
 	{ label: 'Brazil', value: 'BR' },
 ];
 
-const filterModel = buildFilterModel(
-	f.text('name', '', Operators.includes, { required: true }),
-	f.number('age', 0, Operators.greaterThan, { min: 0 , max: 120, step: 1}),
-	f.boolean('isActive', true),
-	f.select('role', null, Operators.is, { options: roleOptions}),
-	f.date('createdAt', new Date(), Operators.lessThan, { max: new Date() }),
-	f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, { max: new Date() }),
-	f.range('priceRange', null, Operators.between, { min: -100, max: 100 }),
-	f.time('time', new Date(), Operators.notPast),
-	f.combobox('country', '', Operators.is, { options: comboboxOptions, placeholder: 'Select a country' })
-);
+/**
+ *
+ */
+interface User {
+	id: number;
+	firstName: string;
+	lastName: string;
+	maidenName: string;
+	age: number;
+	gender: string;
+	email: string;
+	phone: string;
+	username: string;
+	password: string;
+	birthDate: string;
+	image: string;
+	bloodGroup: string;
+	height: number;
+	weight: number;
+	eyeColor: string;
+	hair: {
+		color: string;
+		type: string;
+	};
+	ip: string;
+	address: {
+		address: string;
+		city: string;
+		state: string;
+		stateCode: string;
+		postalCode: string;
+		coordinates: {
+			lat: number;
+			lng: number;
+		};
+		country: string;
+	};
+	macAddress: string;
+	university: string;
+	bank: {
+		cardExpire: string;
+		cardNumber: string;
+		cardType: string;
+		currency: string;
+		iban: string;
+	};
+	company: {
+		department: string;
+		name: string;
+		title: string;
+		address: {
+			address: string;
+			city: string;
+			state: string;
+			stateCode: string;
+			postalCode: string;
+			coordinates: {
+				lat: number;
+				lng: number;
+			};
+			country: string;
+		};
+	};
+	ein: string;
+	ssn: string;
+	userAgent: string;
+	crypto: {
+		coin: string;
+		wallet: string;
+		network: string;
+	};
+	role: string;
+}
 
 @Component({
 	selector: 'spartan-rich-filter-page',
@@ -62,11 +125,30 @@ const filterModel = buildFilterModel(
 	`,
 })
 export default class RichFilterPage {
-
-	readonly filterState = filterModel;
+	readonly filterState = buildFilterModel(
+		f.text('name', '', Operators.includes, { required: true }),
+		f.number('age', 0, Operators.greaterThan, { min: 0, max: 120, step: 1 }),
+		f.boolean('isActive', true),
+		f.select('role', null, Operators.is, { options: roleOptions }),
+		f.date('createdAt', new Date(), Operators.lessThan, { max: new Date() }),
+		f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, { max: new Date() }),
+		f.range('priceRange', null, Operators.between, { min: -100, max: 100 }),
+		f.time('time', new Date(), Operators.notPast),
+		f.combobox('country', '', Operators.is, { options: comboboxOptions, placeholder: 'Select a country' }),
+		f.asyncCombobox('reviewer', '', Operators.is, {
+			placeholder: 'Search reviewers',
+			itemToString: (user: unknown) => (<User>user).firstName + ' ' + (<User>user).lastName,
+			resourceOptions: {
+				defaultValue: [],
+				parse: (response: unknown) => <User[]>(<any>response).users,
+			},
+			resourceRequest: {
+				url: `https://dummyjson.com/users/search?q=${QueryToken}`,
+			},
+		}),
+	);
 
 	readonly parserFn = filterParser;
 
-	readonly payload = computed(()=>this.parserFn(this.filterState.value()));
-
+	readonly payload = computed(() => this.parserFn(this.filterState.value()));
 }
