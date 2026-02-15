@@ -109,9 +109,9 @@ export class ComboAsyncField implements OnInit {
 
 	readonly resourceRequest = computed(() => {
 		const req = this.state().fieldResourceRequest(this.id());
-		let raw = structuredClone(isSignal(req) ? req() : req);
+		let raw = isSignal(req) ? req() : req
 		if (raw.url.includes(QueryToken)) {
-			raw.url = raw.url.replace(QueryToken, this._query());
+			raw = {...raw, url: raw.url.replace(QueryToken, this._query())};
 		}
 		return raw;
 	});

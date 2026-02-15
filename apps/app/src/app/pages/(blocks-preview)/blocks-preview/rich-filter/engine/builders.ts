@@ -318,8 +318,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 	};
 
 	const clear = () => {
-		_v.update((s) => {
-			const c = structuredClone(s);
+		_v.update((c) => {
 			for (const key in c) {
 				c[key as T[number]['id']] = {
 					..._base[key as T[number]['id']],
