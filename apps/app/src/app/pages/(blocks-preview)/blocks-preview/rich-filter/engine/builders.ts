@@ -1,4 +1,4 @@
-import { computed, Signal, signal } from '@angular/core';
+import { computed, ResourceRef, Signal, signal } from '@angular/core';
 import { IEqualityOperator, IIdentityOperator, IOperator, ITextOperator, ITimeOperator, Operators } from './operators';
 import { FieldTypes, IFieldType } from './types';
 
@@ -9,6 +9,7 @@ const buildTextField = <S extends string>(
 	options?: {
 		initialVisible?: boolean;
 		required?: boolean;
+		placeholder?: string;
 	},
 ) => ({
 	id,
@@ -18,6 +19,7 @@ const buildTextField = <S extends string>(
 	__index: 0,
 	__visible: !!options?.initialVisible,
 	__required: !!options?.required,
+	__placeholder: options?.placeholder,
 });
 
 export const buildNumberField = <S extends string>(
@@ -107,6 +109,7 @@ export const buildComboField = <S extends string>(
 	options: {
 		initialVisible?: boolean;
 		options: { label: string; value: unknown }[];
+		placeholder?: string;
 	},
 ) => ({
 	id,
@@ -116,24 +119,27 @@ export const buildComboField = <S extends string>(
 	__index: 0,
 	__visible: !!options?.initialVisible,
 	__options: options?.options,
+	__placeholder: options?.placeholder,
 });
 
-export const buildComboFieldAsync = <S extends string>(
+export const buildComboFieldAsync = <S extends string, R>(
 	id: S,
 	value: string,
 	operator: IIdentityOperator,
 	options: {
 		initialVisible?: boolean;
-		resolver: (pattern: string) => Promise<{ label: string; value: unknown }[]>;
+		resource: ResourceRef<R>
+		placeholder?: string;
 	},
 ) => ({
 	id,
-	__type: FieldTypes.combobox,
+	__type: FieldTypes.asyncCombobox,
 	value,
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
-	__optionsFn: options?.resolver,
+	__resourceRef: options?.resource,
+	__placeholder: options?.placeholder,
 });
 
 export const buildBooleanField = <S extends string>(
@@ -204,6 +210,7 @@ export const fieldBuilder = {
 	[FieldTypes.range]: buildRangeField,
 	[FieldTypes.daterange]: buildDateRangeField,
 	[FieldTypes.combobox]: buildComboField,
+	[FieldTypes.asyncCombobox]: buildComboFieldAsync,
 };
 
 export type RFilterField = ReturnType<(typeof fieldBuilder)[IFieldType]>;
@@ -352,23 +359,36 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 
 	const fieldMinMax = <K extends IFieldType = IFieldType, MinMax = unknown>(
 		fieldId: T[number]['id'],
-	): MinMax extends { __type: K, __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null } => {
+	): MinMax extends { __type: K; __min: infer Min; __max: infer Max }
+		? { min: Min; max: Max }
+		: { min: null; max: null } => {
 		const field = _v()[fieldId] as T[number] & { __min?: unknown; __max?: unknown };
 		if (!('__min' in field) || !('__max' in field)) {
-			return { min: null, max: null } as MinMax extends { __type: K, __min: infer Min; __max: infer Max }
+			return { min: null, max: null } as MinMax extends { __type: K; __min: infer Min; __max: infer Max }
 				? { min: Min; max: Max }
 				: { min: null; max: null };
 		}
 		return {
 			min: field.__min,
 			max: field.__max,
-		} as MinMax extends { __type: K, __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
+		} as MinMax extends { __type: K; __min: infer Min; __max: infer Max }
+			? { min: Min; max: Max }
+			: { min: null; max: null };
 	};
 
 	const fieldRequired = (fieldId: T[number]['id']): boolean => {
 		const field = _v()[fieldId];
 		// add other types as needed, for now only text fields can be required
 		return field.__type === FieldTypes.text ? !!field.__required : false;
+	};
+
+	const fieldPlaceholder = <K = string>(fieldId: T[number]['id']): K => {
+		const field = _v()[fieldId];
+		if ('__placeholder' in field) {
+			return field.__placeholder as K;
+		} else {
+			return _base[fieldId].value as K;
+		}
 	};
 
 	return {
@@ -389,6 +409,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		fieldNumericOptions,
 		fieldMinMax,
 		fieldRequired,
+		fieldPlaceholder,
 	};
 }
 
@@ -409,8 +430,11 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	fieldNumericOptions(fieldId: TId): { min: number | null; max: number | null; step: number | null };
 	fieldMinMax<K extends IFieldType = IFieldType, MinMax = unknown>(
 		fieldId: TId,
-	): MinMax extends { __type: K, __min: infer Min; __max: infer Max } ? { min: Min; max: Max } : { min: null; max: null };
+	): MinMax extends { __type: K; __min: infer Min; __max: infer Max }
+		? { min: Min; max: Max }
+		: { min: null; max: null };
 	fieldRequired(fieldId: TId): boolean;
+	fieldPlaceholder<K = string>(fieldId: TId): K;
 }
 
 // Infer exact type from a specific buildFilterModel call

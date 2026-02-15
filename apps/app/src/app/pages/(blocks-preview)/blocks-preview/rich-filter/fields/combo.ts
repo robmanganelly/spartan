@@ -38,12 +38,7 @@ import { FormsModule } from '@angular/forms';
 	template: `
 		<div
 			hlmButtonGroup
-			class="
-			[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none
-			[&>brn-select>div>hlm-select-trigger>button]:rounded-r-none
-			[&_hlm-input-group]:!rounded-none
-			[&_hlm-input-group]:!border-l-0
-			"
+			class="[&_hlm-input-group]:!rounded-none [&_hlm-input-group]:!border-l-0 [&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
@@ -52,11 +47,11 @@ import { FormsModule } from '@angular/forms';
 
 			<!-- select field with options -->
 			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)">
-				<hlm-combobox-input placeholder="Select a framework" class="rounded-none border-l-0" />
+				<hlm-combobox-input [placeholder]="placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
 					<div hlmComboboxList>
-						@for (framework of options; track $index) {
+						@for (framework of options(); track $index) {
 							<hlm-combobox-item [value]="framework">{{ framework.label }}</hlm-combobox-item>
 						}
 					</div>
@@ -76,18 +71,13 @@ export class ComboField {
 
 	readonly operators = IdentityOperators;
 
-	// todo fix typing to match real signature at compile time
-	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()));
+	readonly controlValue = computed(() => this.state().fieldValue(this.id()));
+
+	readonly placeholder = computed(() => this.state().fieldPlaceholder(this.id()));
 
 	protected updateControlValue(value: string) {
 		this.state().patchFieldValue(this.id(), value);
 	}
 
-	// TODO
-	readonly options = [
-		{ label: 'Option 1', value: 'option1' },
-		{ label: 'Option 2', value: 'option2' },
-		{ label: 'Option 3', value: 'option3' },
-		{ label: 'Option 4 a bit longer now it seems', value: 'option4' },
-	];
+	readonly options = computed(() => this.state().fieldOptions(this.id()) ?? []);
 }

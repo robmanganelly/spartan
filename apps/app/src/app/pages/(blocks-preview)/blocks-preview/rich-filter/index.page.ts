@@ -11,6 +11,19 @@ const roleOptions = [
 	{ label: 'Guest', value: 'guest' },
 ];
 
+const comboboxOptions = [
+	{ label: 'United States', value: 'US' },
+	{ label: 'Canada', value: 'CA' },
+	{ label: 'United Kingdom', value: 'UK' },
+	{ label: 'Australia', value: 'AU' },
+	{ label: 'Germany', value: 'DE' },
+	{ label: 'France', value: 'FR' },
+	{ label: 'Japan', value: 'JP' },
+	{ label: 'China', value: 'CN' },
+	{ label: 'India', value: 'IN' },
+	{ label: 'Brazil', value: 'BR' },
+];
+
 const filterModel = buildFilterModel(
 	f.text('name', '', Operators.includes, { required: true }),
 	f.number('age', 0, Operators.greaterThan, { min: 0 , max: 120, step: 1}),
@@ -20,7 +33,7 @@ const filterModel = buildFilterModel(
 	f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, { max: new Date() }),
 	f.range('priceRange', null, Operators.between, { min: -100, max: 100 }),
 	f.time('time', new Date(), Operators.notPast),
-	f.combobox('country', '', Operators.is, { options: []})
+	f.combobox('country', '', Operators.is, { options: comboboxOptions, placeholder: 'Select a country' })
 );
 
 @Component({
