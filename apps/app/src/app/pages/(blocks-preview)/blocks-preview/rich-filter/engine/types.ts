@@ -39,6 +39,11 @@ export const FieldTypes = {
 	 * should be represented as a combobox with search capabilities options that will be computed from the input
 	 */
 	combobox: 'combobox',
+
+	/**
+	 * should be represented as a combobox with search capabilities options that will be computed from the input asynchronously based on the user input
+	 */
+	asyncCombobox: 'asyncCombobox',
 } as const;
 
 export type IFieldType = typeof FieldTypes[keyof typeof FieldTypes];
