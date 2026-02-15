@@ -391,6 +391,14 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		}
 	};
 
+	const fieldResource = <R = unknown>(fieldId: T[number]['id']): ResourceRef<R> => {
+		const field = _v()[fieldId] as T[number] & { __resourceRef?: ResourceRef<R> };
+		if (!field.__resourceRef) {
+			throw new Error(`Field with id ${fieldId} does not have a resource`);
+		}
+		return field.__resourceRef;
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -410,6 +418,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		fieldMinMax,
 		fieldRequired,
 		fieldPlaceholder,
+		fieldResource,
 	};
 }
 
@@ -435,6 +444,7 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 		: { min: null; max: null };
 	fieldRequired(fieldId: TId): boolean;
 	fieldPlaceholder<K = string>(fieldId: TId): K;
+	fieldResource<R = unknown>(fieldId: TId): ResourceRef<R>;
 }
 
 // Infer exact type from a specific buildFilterModel call
