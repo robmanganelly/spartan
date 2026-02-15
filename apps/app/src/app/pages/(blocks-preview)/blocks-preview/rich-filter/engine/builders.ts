@@ -146,7 +146,7 @@ export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>
 	__placeholder: options?.placeholder,
 	__resourceOptions: options?.resourceOptions,
 	__resourceRequest: options?.resourceRequest,
-	__itemToString: options.itemToString,
+	__itemToString: options.itemToString ?? ((item: R extends Array<infer U> ? U : R) => String(item ?? '')),
 });
 
 export const buildBooleanField = <S extends string>(
