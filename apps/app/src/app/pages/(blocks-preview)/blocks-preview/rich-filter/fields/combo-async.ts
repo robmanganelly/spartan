@@ -10,6 +10,7 @@ import {
 	OnInit,
 	signal,
 } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -18,6 +19,7 @@ import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
+import { debounceTime } from 'rxjs';
 import { FilterModelRef } from '../engine/builders';
 import { QueryToken } from '../engine/constants';
 import { IdentityOperators } from '../engine/operators';
@@ -107,11 +109,16 @@ export class ComboAsyncField implements OnInit {
 
 	readonly placeholder = computed(() => this.state().fieldPlaceholder(this.id()));
 
+	protected readonly _query = signal('');
+	protected readonly debouncedQuery = toSignal(toObservable(this._query).pipe(debounceTime(450)), {
+		initialValue: this._query(),
+	});
+
 	readonly resourceRequest = computed(() => {
 		const req = this.state().fieldResourceRequest(this.id());
-		let raw = isSignal(req) ? req() : req
+		let raw = isSignal(req) ? req() : req;
 		if (raw.url.includes(QueryToken)) {
-			raw = {...raw, url: raw.url.replace(QueryToken, this._query())};
+			raw = { ...raw, url: raw.url.replace(QueryToken, this.debouncedQuery()) };
 		}
 		return raw;
 	});
@@ -136,8 +143,6 @@ export class ComboAsyncField implements OnInit {
 	ngOnInit() {
 		this._resource = httpResource(this.resourceRequest, { ...this.resourceOptions(), injector: this.injector });
 	}
-
-	protected readonly _query = signal('');
 
 	protected readonly _itemToString = computed(() => this.state().fieldItemToString(this.id()));
 
