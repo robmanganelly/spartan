@@ -40,8 +40,6 @@ import { RICH_FILTER_MODEL } from '../../engine/token';
 export class FieldOperator {
 	private readonly engine = inject(RICH_FILTER_MODEL);
 
-	readonly state = input.required<FilterModelRef>();
-
 	readonly fieldId = input.required<string>();
 
 	readonly operators = input.required<Record<string, string>>();
@@ -50,12 +48,12 @@ export class FieldOperator {
 		Object.entries(this.operators()).map(([key, value]) => ({ key, value })),
 	);
 
-	controlValue = computed(() => this.state().fieldOperator(this.fieldId()));
+	protected readonly controlValue = computed(() => this.engine.fieldOperator(this.fieldId()));
 
-	updateControlValue(value: IOperator | IOperator[] | undefined) {
+	protected updateControlValue(value: IOperator | IOperator[] | undefined) {
 		console.log('Selected operator:', value);
 		if (value !== undefined) {
-			this.state().patchFieldOperator(this.fieldId(), Array.isArray(value) ? (value.at(0) as IOperator) : value);
+			this.engine.patchFieldOperator(this.fieldId(), Array.isArray(value) ? (value.at(0) as IOperator) : value);
 		} else {
 			// TODO check if this edge case is ever hit
 			throw new Error('Operator value is undefined');

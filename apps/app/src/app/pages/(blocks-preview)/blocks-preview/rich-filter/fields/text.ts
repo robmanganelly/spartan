@@ -37,9 +37,9 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label  [for]="controlId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
 			<!-- text input -->
 			<input
@@ -51,7 +51,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				[required]="fieldRequired()"
 			/>
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close  [fieldId]="id()" />
 		</div>
 	`,
 })
@@ -59,19 +59,18 @@ export class TextField {
 	private readonly engine = inject(RICH_FILTER_MODEL);
 
 	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'text-' + this.id());
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = TextOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()) ?? '');
+	readonly controlValue = computed(() => this.engine.fieldValue<string>(this.id()) ?? '');
 
-	readonly fieldRequired = computed(() => this.state().fieldRequired(this.id()));
+	readonly fieldRequired = computed(() => this.engine.fieldRequired(this.id()));
 
 	protected updateControlValue(value: string) {
-		this.state().patchFieldValue(this.id(), value);
+		this.engine.patchFieldValue(this.id(), value);
 	}
 }

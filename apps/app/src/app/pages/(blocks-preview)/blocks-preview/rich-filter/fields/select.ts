@@ -41,9 +41,9 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label  [for]="controlId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
 			<!-- select field with options -->
 			<brn-select
@@ -67,7 +67,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			</brn-select>
 
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close  [fieldId]="id()" />
 		</div>
 	`,
 })
@@ -76,16 +76,15 @@ export class SelectField {
 	private readonly engine = inject(RICH_FILTER_MODEL);
 
 	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'select-' + this.id());
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = IdentityOperators;
 
 	// TODO
-	readonly options = computed(()=>this.state().fieldOptions(this.id()))
+	readonly options = computed(()=>this.engine.fieldOptions(this.id()))
 
 	readonly optionMap = computed(() => {
 		const map = new Map();
@@ -95,10 +94,10 @@ export class SelectField {
 		return map;
 	})
 
-	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()));
+	readonly controlValue = computed(() => this.engine.fieldValue<string>(this.id()));
 
 	protected updateControlValue(value: string | string[] | undefined) {
 		if (value == null) return;
-		this.state().patchFieldValue(this.id(), Array.isArray(value) ? value[0] : value);
+		this.engine.patchFieldValue(this.id(), Array.isArray(value) ? value[0] : value);
 	}
 }

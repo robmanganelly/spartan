@@ -41,9 +41,9 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+				<spartan-rich-filter-field-label  [for]="controlId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
 				<!-- popover with calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline" #dateTrigger>
@@ -59,7 +59,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+				<spartan-rich-filter-field-close  [fieldId]="id()" />
 			</div>
 		</hlm-popover>
 	`,
@@ -72,20 +72,18 @@ export class DateField {
 	private popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
 
 	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'date-' + this.id());
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
 
 	readonly operators = TimeOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue<Date>(this.id()) ?? new Date());
+	readonly controlValue = computed(() => this.engine.fieldValue<Date>(this.id()) ?? new Date());
 
-	readonly options = computed(() => this.state().fieldMinMax(this.id()));
+	readonly options = computed(() => this.engine.fieldMinMax(this.id()));
 
 	updateControlValue(value: Date | null) {
-		this.state().patchFieldValue(this.id(), value);
+		this.engine.patchFieldValue(this.id(), value);
 
 		// close popover after selecting range;
 		// wrapped in promise to let change detection settle

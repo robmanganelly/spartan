@@ -37,9 +37,9 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label  [for]="controlId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
 			<!-- numeric input -->
 			<input
@@ -54,7 +54,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				[step]="options().step"
 			/>
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close  [fieldId]="id()" />
 		</div>
 	`,
 })
@@ -63,20 +63,19 @@ export class NumberField {
 
 
 	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'number-' + this.id());
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = EqualityOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue<number>(this.id()) ?? 0);
+	readonly controlValue = computed(() => this.engine.fieldValue<number>(this.id()) ?? 0);
 
-	readonly options = computed(() => this.state().fieldNumericOptions(this.id()));
+	readonly options = computed(() => this.engine.fieldNumericOptions(this.id()));
 
 	protected updateControlValue(event: string) {
 		// html input of type number returns string, so we need to convert it to number
-		this.state().patchFieldValue(this.id(), +event);
+		this.engine.patchFieldValue(this.id(), +event);
 	}
 }

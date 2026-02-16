@@ -42,9 +42,9 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&_hlm-input-group]:!rounded-none [&_hlm-input-group]:!border-l-0 [&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label  [for]="controlId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
 			<!-- select field with options -->
 			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)">
@@ -60,7 +60,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			</hlm-combobox>
 
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close  [fieldId]="id()" />
 		</div>
 	`,
 })
@@ -71,8 +71,6 @@ export class ComboField {
 	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'combo-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
 
 	readonly operators = IdentityOperators;
 

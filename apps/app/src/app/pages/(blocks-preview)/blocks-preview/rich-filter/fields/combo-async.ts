@@ -52,9 +52,9 @@ import { FieldOperator } from './utils/field-operator';
 				class="[&_hlm-input-group]:!rounded-none [&_hlm-input-group]:!border-l-0 [&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+				<spartan-rich-filter-field-label [for]="controlId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
 				<!-- async combobox -->
 				<hlm-combobox
@@ -93,7 +93,7 @@ import { FieldOperator } from './utils/field-operator';
 				</hlm-combobox>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+				<spartan-rich-filter-field-close [fieldId]="id()" />
 			</div>
 		}
 	`,
@@ -102,17 +102,14 @@ export class ComboAsyncField implements OnInit {
 	private readonly engine = inject(RICH_FILTER_MODEL);
 
 	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'combo-async-' + this.id());
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
-
 	readonly operators = IdentityOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue(this.id()));
+	readonly controlValue = computed(() => this.engine.fieldValue(this.id()));
 
-	readonly placeholder = computed(() => this.state().fieldPlaceholder(this.id()));
+	readonly placeholder = computed(() => this.engine.fieldPlaceholder(this.id()));
 
 	protected readonly _query = signal('');
 	protected readonly debouncedQuery = toSignal(toObservable(this._query).pipe(debounceTime(450)), {
@@ -120,7 +117,7 @@ export class ComboAsyncField implements OnInit {
 	});
 
 	readonly resourceRequest = computed(() => {
-		const req = this.state().fieldResourceRequest(this.id());
+		const req = this.engine.fieldResourceRequest(this.id());
 		let raw = isSignal(req) ? req() : req;
 		if (raw.url.includes(QueryToken)) {
 			raw = { ...raw, url: raw.url.replace(QueryToken, this.debouncedQuery()) };
@@ -129,7 +126,7 @@ export class ComboAsyncField implements OnInit {
 	});
 
 	readonly resourceOptions = computed(() => {
-		const opts = this.state().fieldResourceOptions(this.id());
+		const opts = this.engine.fieldResourceOptions(this.id());
 		return isSignal(opts) ? opts() : opts;
 	});
 
@@ -149,7 +146,7 @@ export class ComboAsyncField implements OnInit {
 		this._resource = httpResource(this.resourceRequest, { ...this.resourceOptions(), injector: this.injector });
 	}
 
-	protected readonly _itemToString = computed(() => this.state().fieldItemToString(this.id()));
+	protected readonly _itemToString = computed(() => this.engine.fieldItemToString(this.id()));
 
 	protected readonly showStatus = computed(
 		() =>
@@ -168,6 +165,6 @@ export class ComboAsyncField implements OnInit {
 	});
 
 	protected updateControlValue(value: unknown) {
-		this.state().patchFieldValue(this.id(), value as string);
+		this.engine.patchFieldValue(this.id(), value as string);
 	}
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { RICH_FILTER_MODEL } from '../../engine/token';
@@ -18,6 +18,7 @@ export class FieldLabel {
 
 	private readonly engine = inject(RICH_FILTER_MODEL);
 
-	readonly label = input.required<string>();
 	readonly for = input.required<string>();
+
+	protected readonly label = computed(() => this.engine.fieldLabel(this.for()));
 }

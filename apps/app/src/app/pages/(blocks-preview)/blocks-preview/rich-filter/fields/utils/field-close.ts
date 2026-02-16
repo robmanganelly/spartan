@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -16,7 +16,7 @@ import { RICH_FILTER_MODEL } from '../../engine/token';
 	},
 	template: `
 		<button
-			(click)="state().cleanField(fieldId())"
+			(click)="clean(fieldId())"
 			hlmBtn
 			variant="outline"
 			size="icon"
@@ -27,8 +27,10 @@ import { RICH_FILTER_MODEL } from '../../engine/token';
 	`,
 })
 export class FieldClose {
-	private readonly engine = inject(RICH_FILTER_MODEL);
 
-	readonly state = input.required<FilterModelRef>();
+	private readonly engine = inject(RICH_FILTER_MODEL);
 	readonly fieldId = input.required<string>();
+
+	protected readonly clean = this.engine.cleanField;
+
 }

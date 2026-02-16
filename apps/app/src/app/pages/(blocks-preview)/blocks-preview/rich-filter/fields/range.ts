@@ -39,9 +39,9 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+				<spartan-rich-filter-field-label [for]="controlId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
 				<!-- popover with slider -->
 				<button variant="outline" hlmPopoverTrigger hlmBtn variant="outline">
@@ -60,7 +60,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+				<spartan-rich-filter-field-close [fieldId]="id()" />
 			</div>
 		</hlm-popover>
 	`,
@@ -69,18 +69,17 @@ export class RangeField {
 	private readonly engine = inject(RICH_FILTER_MODEL);
 
 	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
 	readonly controlId = computed(() => 'range-' + this.id());
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = RangeOperators;
 
-	readonly options = computed(() => this.state().fieldMinMax<typeof FieldTypes.daterange>(this.id()));
+	readonly options = computed(() => this.engine.fieldMinMax<typeof FieldTypes.daterange>(this.id()));
 
 	readonly controlValue = computed<RangeValue>(() => {
-		const v = this.state().fieldValue<{ min: number; max: number } | null>(this.id());
+		const v = this.engine.fieldValue<{ min: number; max: number } | null>(this.id());
 		const { min, max } = this.options();
 		return v ? [v.min, v.max] : [min ?? 0, max ?? 100];
 	});
@@ -91,6 +90,6 @@ export class RangeField {
 	});
 
 	protected updateControlValue(value: RangeValue) {
-		this.state().patchFieldValue(this.id(), { min: value[0], max: value[1] });
+		this.engine.patchFieldValue(this.id(), { min: value[0], max: value[1] });
 	}
 }
