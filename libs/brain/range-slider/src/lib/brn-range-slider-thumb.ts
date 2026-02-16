@@ -9,6 +9,7 @@ import { injectBrnRangeSlider } from './brn-range-slider.token';
 	selector: '[brnRangeSliderThumb]',
 	host: {
 		role: 'slider',
+		'aria-orientation': 'horizontal',
 		'[attr.aria-valuenow]': '_currentValue()',
 		'[attr.aria-valuemin]': '_ariaMin()',
 		'[attr.aria-valuemax]': '_ariaMax()',
@@ -110,6 +111,10 @@ export class BrnRangeSliderThumb {
 
 	@HostListener('keydown', ['$event'])
 	protected handleKeydown(event: KeyboardEvent): void {
+		if (this._slider.mutableDisabled()) {
+			return;
+		}
+
 		const dir = getComputedStyle(this._elementRef.nativeElement).direction;
 		let multiplier = event.shiftKey ? 10 : 1;
 

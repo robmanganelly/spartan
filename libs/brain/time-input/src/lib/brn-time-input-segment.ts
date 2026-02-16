@@ -14,7 +14,7 @@ import { injectBrnTimeInput } from './brn-time-input.token';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: {
 		'[attr.data-segment]': 'segment()',
-		'[attr.data-active]': '_isActive()',
+		'[attr.data-active]': '_isActive() || null',
 		'[attr.aria-label]': 'segment()',
 		'[attr.data-disabled]': '_timeInput.disabled() || null',
 	},

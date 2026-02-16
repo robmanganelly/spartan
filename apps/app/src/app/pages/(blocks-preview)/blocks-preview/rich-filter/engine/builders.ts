@@ -319,14 +319,15 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 
 	const clear = () => {
 		_v.update((c) => {
-			for (const key in c) {
-				c[key as T[number]['id']] = {
+			const next = { ...c };
+			for (const key in next) {
+				next[key as T[number]['id']] = {
 					..._base[key as T[number]['id']],
 					__visible: false,
 					__index: 0,
 				} satisfies T[number];
 			}
-			return c;
+			return next;
 		});
 	};
 
