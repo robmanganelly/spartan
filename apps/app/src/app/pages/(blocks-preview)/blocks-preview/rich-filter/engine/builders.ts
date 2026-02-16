@@ -8,6 +8,7 @@ const buildTextField = <S extends string>(
 	value: string,
 	operator: ITextOperator,
 	options?: {
+		label?: string;
 		initialVisible?: boolean;
 		required?: boolean;
 		placeholder?: string;
@@ -21,6 +22,7 @@ const buildTextField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__required: !!options?.required,
 	__placeholder: options?.placeholder,
+	__label: options?.label,
 });
 
 export const buildNumberField = <S extends string>(
@@ -29,6 +31,7 @@ export const buildNumberField = <S extends string>(
 	operator: IEqualityOperator,
 	options?: {
 		initialVisible?: boolean;
+		label?: string;
 		min?: number;
 		max?: number;
 		step?: number;
@@ -43,6 +46,7 @@ export const buildNumberField = <S extends string>(
 	__min: options?.min,
 	__max: options?.max,
 	__step: options?.step,
+	__label: options?.label,
 });
 
 export const buildDateField = <S extends string>(
@@ -53,6 +57,7 @@ export const buildDateField = <S extends string>(
 		initialVisible?: boolean;
 		min?: Date;
 		max?: Date;
+		label?: string;
 	},
 ) => ({
 	id,
@@ -63,6 +68,7 @@ export const buildDateField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__min: options?.min,
 	__max: options?.max,
+	__label: options?.label,
 });
 
 export const buildTimeField = <S extends string>(
@@ -73,6 +79,7 @@ export const buildTimeField = <S extends string>(
 		initialVisible?: boolean;
 		min?: Date;
 		max?: Date;
+		label?: string;
 	},
 ) => ({
 	id,
@@ -83,6 +90,7 @@ export const buildTimeField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__min: options?.min,
 	__max: options?.max,
+	__label: options?.label,
 });
 
 export const buildSelectField = <S extends string>(
@@ -92,6 +100,7 @@ export const buildSelectField = <S extends string>(
 	options: {
 		initialVisible?: boolean;
 		options: { label: string; value: unknown }[];
+		label?: string;
 	},
 ) => ({
 	id,
@@ -101,6 +110,7 @@ export const buildSelectField = <S extends string>(
 	__index: 0,
 	__visible: !!options?.initialVisible,
 	__options: options?.options,
+	__label: options?.label,
 });
 
 export const buildComboField = <S extends string>(
@@ -111,6 +121,7 @@ export const buildComboField = <S extends string>(
 		initialVisible?: boolean;
 		options: { label: string; value: unknown }[];
 		placeholder?: string;
+		label?: string;
 	},
 ) => ({
 	id,
@@ -121,6 +132,7 @@ export const buildComboField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__options: options?.options,
 	__placeholder: options?.placeholder,
+	__label: options?.label,
 });
 
 export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>(
@@ -128,6 +140,7 @@ export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>
 	value: string,
 	operator: IIdentityOperator,
 	options: {
+		label?: string;
 		initialVisible?: boolean;
 		placeholder?: string;
 		resourceOptions:
@@ -147,6 +160,7 @@ export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>
 	__resourceOptions: options?.resourceOptions,
 	__resourceRequest: options?.resourceRequest,
 	__itemToString: options.itemToString ?? ((item: R extends Array<infer U> ? U : R) => String(item ?? '')),
+	__label: options?.label,
 });
 
 export const buildBooleanField = <S extends string>(
@@ -154,6 +168,7 @@ export const buildBooleanField = <S extends string>(
 	value: boolean | null,
 	options?: {
 		initialVisible?: boolean;
+		label?: string;
 	},
 ) => ({
 	id,
@@ -165,6 +180,7 @@ export const buildBooleanField = <S extends string>(
 	operator: Operators.is,
 	__index: 0,
 	__visible: !!options?.initialVisible,
+	__label: options?.label,
 });
 
 export const buildRangeField = <S extends string>(
@@ -175,6 +191,7 @@ export const buildRangeField = <S extends string>(
 		initialVisible?: boolean;
 		min?: number;
 		max?: number;
+		label?: string;
 	},
 ) => ({
 	id,
@@ -185,6 +202,7 @@ export const buildRangeField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__min: options?.min,
 	__max: options?.max,
+	__label: options?.label,
 });
 
 export const buildDateRangeField = <S extends string>(
@@ -195,6 +213,7 @@ export const buildDateRangeField = <S extends string>(
 		initialVisible?: boolean;
 		min?: Date;
 		max?: Date;
+		label?: string;
 	},
 ) => ({
 	id,
@@ -205,6 +224,7 @@ export const buildDateRangeField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__min: options?.min,
 	__max: options?.max,
+	__label: options?.label,
 });
 
 export const fieldBuilder = {
@@ -222,7 +242,7 @@ export const fieldBuilder = {
 
 export type RFilterField = ReturnType<(typeof fieldBuilder)[IFieldType]>;
 
-export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
+export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): FilterModelRef<T[number]['id'], T[number]> {
 	const _base = fields.reduce(
 		(acc, field, i) => {
 			field.__index = i;
@@ -442,6 +462,11 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		return field.__resourceRequest as HttpResourceRequest | Signal<HttpResourceRequest>;
 	};
 
+	const fieldLabel = (fieldId: T[number]['id']): string => {
+		const field = _v()[fieldId];
+		return field.__label ?? field.id;
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -464,7 +489,8 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]) {
 		fieldItemToString,
 		fieldResourceOptions,
 		fieldResourceRequest,
-	};
+		fieldLabel,
+	} satisfies FilterModelRef<T[number]['id'], T[number]>;
 }
 
 // Base interface for component inputs - uses 'never' in contravariant positions to accept any specific implementation
@@ -492,6 +518,7 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	fieldItemToString<I = unknown>(fieldId: TId): (item: I) => string;
 	fieldResourceOptions<R = unknown[], K = unknown>(fieldId: TId): HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>>;
   fieldResourceRequest(fieldId: TId): HttpResourceRequest | Signal<HttpResourceRequest>;
+	fieldLabel(fieldId: TId): string;
 }
 
 // Infer exact type from a specific buildFilterModel call

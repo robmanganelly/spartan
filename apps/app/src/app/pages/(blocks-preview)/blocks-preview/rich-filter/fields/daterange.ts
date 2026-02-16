@@ -39,7 +39,7 @@ import { DatePipe } from '@angular/common';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
+				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
 				<!-- operator dropdown -->
 				<spartan-rich-filter-field-operator [state] ="state()" [fieldId]="id()" [operators]="operators" />
 
@@ -72,7 +72,9 @@ export class DateRangeField {
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
-	readonly fieldLabel = computed(() => 'daterange-' + this.id());
+	readonly controlId = computed(() => 'daterange-' + this.id());
+
+	readonly label = computed(() => this.state().fieldLabel(this.id()));
 
 	readonly operators = RangeOperators;
 

@@ -1,10 +1,10 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 import { buildFilterModel, fieldBuilder as f } from './engine/builders';
+import { QueryToken } from './engine/constants';
 import { Operators } from './engine/operators';
 import { filterParser } from './engine/parser';
 import { SpartanRichFilter } from './rich-filter';
-import { QueryToken } from './engine/constants';
 
 const roleOptions = [
 	{ label: 'Admin', value: 'admin' },
@@ -126,15 +126,22 @@ interface User {
 })
 export default class RichFilterPage {
 	readonly filterState = buildFilterModel(
-		f.text('name', '', Operators.includes, { required: true }),
-		f.number('age', 0, Operators.greaterThan, { min: 0, max: 120, step: 1 }),
-		f.boolean('isActive', true),
-		f.select('role', null, Operators.is, { options: roleOptions }),
-		f.date('createdAt', new Date(), Operators.lessThan, { max: new Date() }),
-		f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, { max: new Date() }),
-		f.range('priceRange', null, Operators.between, { min: -100, max: 100 }),
-		f.time('time', new Date(), Operators.notPast),
-		f.combobox('country', '', Operators.is, { options: comboboxOptions, placeholder: 'Select a country' }),
+		f.text('name', '', Operators.includes, { required: true, label: 'Name' }),
+		f.number('age', 0, Operators.greaterThan, { min: 0, max: 120, step: 1, label: 'Age' }),
+		f.boolean('isActive', true, { label: 'Is Active' }),
+		f.select('role', null, Operators.is, { options: roleOptions, label: 'Role' }),
+		f.date('createdAt', new Date(), Operators.lessThan, { max: new Date(), label: 'Created At' }),
+		f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, {
+			max: new Date(),
+			label: 'Date Range',
+		}),
+		f.range('priceRange', null, Operators.between, { min: -100, max: 100, label: 'Price Range' }),
+		f.time('time', new Date(), Operators.notPast, { label: 'Time' }),
+		f.combobox('country', '', Operators.is, {
+			options: comboboxOptions,
+			placeholder: 'Select a country',
+			label: 'Country',
+		}),
 		f.asyncCombobox('reviewer', '', Operators.is, {
 			placeholder: 'Search reviewers',
 			itemToString: (user: unknown) => (<User>user).firstName + ' ' + (<User>user).lastName,
@@ -142,6 +149,7 @@ export default class RichFilterPage {
 				defaultValue: [],
 				parse: (response: unknown) => <User[]>(<any>response).users,
 			},
+			label: 'Reviewer',
 			resourceRequest: {
 				url: `https://dummyjson.com/users/search?q=${QueryToken}`,
 			},
