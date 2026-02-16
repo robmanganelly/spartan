@@ -4,7 +4,6 @@ import {
 	computed,
 	forwardRef,
 	model,
-	output,
 	signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -52,9 +51,6 @@ export class BrnTimeInput implements ControlValueAccessor {
 
 	/** Whether the input is disabled. */
 	readonly disabled = model(false);
-
-	/** Emitted when the value changes. */
-	readonly timeChange = output<BrnTimeValue>();
 
 	/** The currently focused segment. */
 	readonly activeSegment = signal<BrnTimeSegment | null>(null);
@@ -206,6 +202,5 @@ export class BrnTimeInput implements ControlValueAccessor {
 	private _updateValue(value: BrnTimeValue): void {
 		this.value.set(value);
 		this._onChange(value);
-		this.timeChange.emit(value);
 	}
 }
