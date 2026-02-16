@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
@@ -39,7 +39,7 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 					class="inline-flex items-center gap-0.5"
 					[value]="value()"
 					[disabled]="disabled()"
-					(timeChange)="_onTimeChange($event)"
+					(valueChange)="_onValueChange($event)"
 				>
 					<brn-time-input-segment hlm segment="hours" />
 					<span class="text-muted-foreground" aria-hidden="true">:</span>
@@ -133,7 +133,7 @@ export class HlmTimeInput implements ControlValueAccessor {
 
 	readonly value = model<BrnTimeValue>({ hours: 12, minutes: 0, seconds: 0, period: 'AM' });
 	readonly disabled = model(false);
-	readonly timeChange = output<BrnTimeValue>();
+
 
 	protected readonly _computedClass = computed(() =>
 		hlm(
@@ -171,10 +171,9 @@ export class HlmTimeInput implements ControlValueAccessor {
 		this.disabled.set(isDisabled);
 	}
 
-	protected _onTimeChange(value: BrnTimeValue): void {
+	protected _onValueChange(value: BrnTimeValue): void {
 		this.value.set(value);
 		this._onChange(value);
-		this.timeChange.emit(value);
 		this._onTouched();
 	}
 
@@ -198,6 +197,5 @@ export class HlmTimeInput implements ControlValueAccessor {
 	private _updateFromPicker(value: BrnTimeValue): void {
 		this.value.set(value);
 		this._onChange(value);
-		this.timeChange.emit(value);
 	}
 }

@@ -42,7 +42,7 @@ import { FieldOperator } from './utils/field-operator';
 				[displaySeconds]="true"
 				class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none"
 				[value]="controlValue()"
-				(timeChange)="updateControlValue($event)"
+				(valueChange)="updateControlValue($event)"
 			/>
 
 			<!-- close button -->
