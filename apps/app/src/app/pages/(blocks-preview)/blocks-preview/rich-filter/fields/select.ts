@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -14,6 +14,7 @@ import { IdentityOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-select-field',
@@ -71,6 +72,9 @@ import { FieldOperator } from './utils/field-operator';
 	`,
 })
 export class SelectField {
+
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
@@ -8,6 +8,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { FilterModelRef } from '../engine/builders';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
@@ -44,6 +45,8 @@ import { FieldLabel } from './utils/field-label';
 	`,
 })
 export class BooleanField {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 

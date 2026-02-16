@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
@@ -13,6 +13,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { DatePipe } from '@angular/common';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -64,6 +65,9 @@ import { DatePipe } from '@angular/common';
 	`,
 })
 export class DateField {
+
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 
 	private popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
 

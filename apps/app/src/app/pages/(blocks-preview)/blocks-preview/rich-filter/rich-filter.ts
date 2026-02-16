@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, Type } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, Type } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFunnel, lucideFunnelPlus, lucideFunnelX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -17,6 +17,7 @@ import { SelectField } from './fields/select';
 import { TextField } from './fields/text';
 import { TimeField } from './fields/time';
 import { ComboAsyncField } from './fields/combo-async';
+import { RICH_FILTER_MODEL } from './engine/token';
 
 /** Maps each field type to the component class that renders it. */
 const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
@@ -36,7 +37,15 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 	selector: 'spartan-rich-filter',
 	imports: [HlmButtonImports, NgIcon, HlmIconImports, HlmDropdownMenuImports, NgComponentOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	providers: [provideIcons({ lucideFunnel, lucideFunnelX, lucideFunnelPlus})],
+	providers: [
+		provideIcons({ lucideFunnel, lucideFunnelX, lucideFunnelPlus}),
+		// Provide the filter model from the parent component
+		// to prevent prop drilling through all the field components.
+		{
+			provide: RICH_FILTER_MODEL,
+			useFactory: () => inject(SpartanRichFilter).state,
+		}
+	],
 	template: `
 		@let filter = state();
 		<div class="flex w-full gap-2">

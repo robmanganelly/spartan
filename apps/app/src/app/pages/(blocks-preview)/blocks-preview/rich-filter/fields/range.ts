@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -13,6 +13,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FieldTypes } from '../engine/types';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-range-field',
@@ -65,6 +66,8 @@ import { FieldTypes } from '../engine/types';
 	`,
 })
 export class RangeField {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
@@ -82,12 +85,10 @@ export class RangeField {
 		return v ? [v.min, v.max] : [min ?? 0, max ?? 100];
 	});
 
-
 	protected readonly _displayRange = computed(() => {
 		const [low, high] = this.controlValue();
 		return `${low >= 0 ? low : `(${low})`} - ${high >= 0 ? high : `(${high})`}`;
 	});
-
 
 	protected updateControlValue(value: RangeValue) {
 		this.state().patchFieldValue(this.id(), { min: value[0], max: value[1] });

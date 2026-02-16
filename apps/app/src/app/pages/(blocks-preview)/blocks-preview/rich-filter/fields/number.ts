@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -12,6 +12,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-number-field',
@@ -58,6 +59,9 @@ import { FormsModule } from '@angular/forms';
 	`,
 })
 export class NumberField {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
@@ -69,11 +73,10 @@ export class NumberField {
 
 	readonly controlValue = computed(() => this.state().fieldValue<number>(this.id()) ?? 0);
 
-	readonly options = computed(() => this.state().fieldNumericOptions(this.id()))
+	readonly options = computed(() => this.state().fieldNumericOptions(this.id()));
 
 	protected updateControlValue(event: string) {
 		// html input of type number returns string, so we need to convert it to number
 		this.state().patchFieldValue(this.id(), +event);
 	}
-
 }

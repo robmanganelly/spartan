@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
@@ -13,6 +13,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { DatePipe } from '@angular/common';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-daterange-field',
@@ -41,7 +42,7 @@ import { DatePipe } from '@angular/common';
 				<!-- label -->
 				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state] ="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
 
 				<!-- popover with range calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline" #dateRangeTrigger>
@@ -49,8 +50,8 @@ import { DatePipe } from '@angular/common';
 					{{ startDate() | date: 'MMM d' }} - {{ endDate() | date: 'MMM d' }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-				@let opts = options();
-				<hlm-calendar-range
+					@let opts = options();
+					<hlm-calendar-range
 						[min]="opts.min"
 						[max]="opts.max"
 						[startDate]="startDate()"
@@ -67,6 +68,8 @@ import { DatePipe } from '@angular/common';
 	`,
 })
 export class DateRangeField {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateRangeTrigger');
 
 	readonly id = input.required<string>();

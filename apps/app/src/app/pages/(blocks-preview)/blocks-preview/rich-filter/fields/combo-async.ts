@@ -23,6 +23,7 @@ import { debounceTime } from 'rxjs';
 import { FilterModelRef } from '../engine/builders';
 import { QueryToken } from '../engine/constants';
 import { IdentityOperators } from '../engine/operators';
+import { RICH_FILTER_MODEL } from '../engine/token';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
@@ -98,6 +99,8 @@ import { FieldOperator } from './utils/field-operator';
 	`,
 })
 export class ComboAsyncField implements OnInit {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 

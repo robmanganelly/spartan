@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { RICH_FILTER_MODEL } from '../../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-field-label',
@@ -14,6 +15,9 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 	`,
 })
 export class FieldLabel {
+
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly label = input.required<string>();
 	readonly for = input.required<string>();
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -12,6 +12,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
+import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -55,6 +56,8 @@ import { FormsModule } from '@angular/forms';
 	`,
 })
 export class TextField {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 

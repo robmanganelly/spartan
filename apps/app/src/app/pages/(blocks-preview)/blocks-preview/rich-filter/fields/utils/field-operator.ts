@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { FilterModelRef } from '../../engine/builders';
 import { IOperator } from '../../engine/operators';
+import { RICH_FILTER_MODEL } from '../../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-field-operator',
@@ -37,6 +38,8 @@ import { IOperator } from '../../engine/operators';
 	`,
 })
 export class FieldOperator {
+	private readonly engine = inject(RICH_FILTER_MODEL);
+
 	readonly state = input.required<FilterModelRef>();
 
 	readonly fieldId = input.required<string>();
