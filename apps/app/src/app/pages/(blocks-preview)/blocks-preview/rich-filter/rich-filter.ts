@@ -57,7 +57,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 							<hlm-dropdown-menu-group>
 								@for (field of remaining; track field.id) {
 									<button hlmDropdownMenuItem (click)="filter.addField(field.id)">
-										<span>{{ field.id }}</span>
+										<span>{{ field.__label ?? field.id }}</span>
 									</button>
 								} @empty {
 									<div class="text-muted-foreground px-2 py-1.5 text-sm">No filters available</div>

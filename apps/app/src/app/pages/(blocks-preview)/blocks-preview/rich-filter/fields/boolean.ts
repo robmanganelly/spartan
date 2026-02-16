@@ -29,14 +29,14 @@ import { FieldLabel } from './utils/field-label';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="id()" [for]="fieldLabel()" />
+			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
 			<!-- operator dropdown -->
 
 			<!-- boolean input -->
 			<div hlmButtonGroupSeparator></div>
 
 			<div hlmButtonGroupText class="dark:bg-input/30 bg-transparent">
-				<hlm-checkbox [id]="fieldLabel()" [checked]="controlValue()" (checkedChange)="updateControl($event)" />
+				<hlm-checkbox [id]="controlId()" [checked]="controlValue()" (checkedChange)="updateControl($event)" />
 			</div>
 			<!-- close button -->
 			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()"></spartan-rich-filter-field-close>
@@ -47,7 +47,9 @@ export class BooleanField {
 	readonly id = input.required<string>();
 	readonly state = input.required<FilterModelRef>();
 
-	readonly fieldLabel = computed(() => 'boolean-' + this.id());
+	readonly controlId = computed(() => 'boolean-' + this.id());
+
+	readonly label = computed(() => this.state().fieldLabel(this.id()));
 
 	readonly controlValue = computed(() => this.state().fieldValue<boolean>(this.id()));
 
