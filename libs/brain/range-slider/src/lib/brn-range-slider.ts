@@ -34,7 +34,8 @@ export type RangeValue = [number, number];
 		},
 	],
 	host: {
-		'aria-orientation': 'horizontal',
+		role: 'group',
+		'data-orientation': 'horizontal',
 		'(focusout)': '_onTouched?.()',
 	},
 })
