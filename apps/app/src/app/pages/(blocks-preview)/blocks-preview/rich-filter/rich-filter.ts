@@ -43,7 +43,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 		// to prevent prop drilling through all the field components.
 		{
 			provide: RICH_FILTER_MODEL,
-			useFactory: () => inject(SpartanRichFilter).state,
+			useFactory: () => inject(SpartanRichFilter).state(),
 		}
 	],
 	template: `
@@ -94,7 +94,7 @@ export class SpartanRichFilter {
 		return filter.fieldsArray().map((e) => ({
 			id: e.id,
 			component: FIELD_COMPONENT_MAP[e.__type],
-			inputs: { id: e.id, state: filter },
+			inputs: { id: e.id, },
 		}));
 	});
 }

@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
@@ -9,11 +9,10 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { TimeOperators } from '../engine/operators';
+import { BaseFilterField } from './utils/base-field';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
-import { DatePipe } from '@angular/common';
-import { RICH_FILTER_MODEL } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -41,7 +40,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label  [for]="controlId()" />
+				<spartan-rich-filter-field-label [for]="labelFor()" [label]="label()" />
 				<!-- operator dropdown -->
 				<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
@@ -52,43 +51,25 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
 					@let opts = options();
-					<hlm-calendar
-					[min]="opts.min"
-					[max]="opts.max"
-					[date]="value" (dateChange)="updateControlValue($event)" />
+					<hlm-calendar [min]="opts.min" [max]="opts.max" [date]="value" (dateChange)="updateControl($event)" />
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close  [fieldId]="id()" />
+				<spartan-rich-filter-field-close [fieldId]="id()" />
 			</div>
 		</hlm-popover>
 	`,
 })
-export class DateField {
-
-	private readonly engine = inject(RICH_FILTER_MODEL);
-
-
+export class DateField extends BaseFilterField<Date> {
 	private popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
-
-	readonly id = input.required<string>();
 
 	readonly controlId = computed(() => 'date-' + this.id());
 
-
 	readonly operators = TimeOperators;
-
-	readonly controlValue = computed(() => this.engine.fieldValue<Date>(this.id()) ?? new Date());
 
 	readonly options = computed(() => this.engine.fieldMinMax(this.id()));
 
-	updateControlValue(value: Date | null) {
-		this.engine.patchFieldValue(this.id(), value);
-
-		// close popover after selecting range;
-		// wrapped in promise to let change detection settle
-		Promise.resolve().then(() => {
-			this.popoverBtn()?.nativeElement.click();
-		});
-	}
+	protected override afterUpdate = () => {
+		this.popoverBtn()?.nativeElement.click();
+	};
 }

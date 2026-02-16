@@ -16,9 +16,8 @@ import { RICH_FILTER_MODEL } from '../../engine/token';
 })
 export class FieldLabel {
 
-	private readonly engine = inject(RICH_FILTER_MODEL);
+	readonly label = input.required<string>();
 
 	readonly for = input.required<string>();
 
-	protected readonly label = computed(() => this.engine.fieldLabel(this.for()));
 }

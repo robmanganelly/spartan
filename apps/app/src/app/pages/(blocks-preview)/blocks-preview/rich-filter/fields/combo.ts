@@ -15,6 +15,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
 import { RICH_FILTER_MODEL } from '../engine/token';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-field',
@@ -42,12 +43,12 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&_hlm-input-group]:!rounded-none [&_hlm-input-group]:!border-l-0 [&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label  [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="label()"  [for]="labelFor()" />
 			<!-- operator dropdown -->
 			<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
 			<!-- select field with options -->
-			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)">
+			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControl($event)">
 				<hlm-combobox-input [placeholder]="placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
@@ -64,23 +65,11 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 		</div>
 	`,
 })
-export class ComboField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
-
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'combo-' + this.id());
+export class ComboField extends BaseFilterField<string> {
 
 	readonly operators = IdentityOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue(this.id()));
+	readonly placeholder = computed(() => this.engine.fieldPlaceholder(this.id()));
 
-	readonly placeholder = computed(() => this.state().fieldPlaceholder(this.id()));
-
-	protected updateControlValue(value: string) {
-		this.state().patchFieldValue(this.id(), value);
-	}
-
-	readonly options = computed(() => this.state().fieldOptions(this.id()) ?? []);
+	readonly options = computed(() => this.engine.fieldOptions(this.id()) ?? []);
 }

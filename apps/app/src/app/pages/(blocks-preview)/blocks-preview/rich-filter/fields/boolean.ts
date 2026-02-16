@@ -8,6 +8,8 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { RICH_FILTER_MODEL } from '../engine/token';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
+import { FieldTypes } from '../engine/types';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
@@ -29,30 +31,22 @@ import { FieldLabel } from './utils/field-label';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [for]="controlId()" />
+			<spartan-rich-filter-field-label [for]="labelFor()" [label]="label()" />
 			<!-- operator dropdown -->
 
 			<!-- boolean input -->
 			<div hlmButtonGroupSeparator></div>
 
 			<div hlmButtonGroupText class="dark:bg-input/30 bg-transparent">
-				<hlm-checkbox [id]="controlId()" [checked]="controlValue()" (checkedChange)="updateControl($event)" />
+				<hlm-checkbox
+					[id]="labelFor()"
+					[checked]="controlValue()"
+					(checkedChange)="updateControl($event)"
+				/>
 			</div>
 			<!-- close button -->
 			<spartan-rich-filter-field-close [fieldId]="id()"></spartan-rich-filter-field-close>
 		</div>
 	`,
 })
-export class BooleanField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
-
-	readonly id = input.required<string>();
-
-	readonly controlId = computed(() => 'boolean-' + this.id());
-
-	readonly controlValue = computed(() => this.engine.fieldValue<boolean>(this.id()));
-
-	protected updateControl(value: boolean) {
-		this.engine.patchFieldValue(this.id(), value);
-	}
-}
+export class BooleanField extends BaseFilterField<boolean> {}

@@ -467,6 +467,11 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 		return field.__label ?? field.id;
 	};
 
+	const fieldType = (fieldId: T[number]['id']): T[number]['__type'] => {
+		const field = _v()[fieldId];
+		return field.__type;
+	};
+
 	return {
 		value: _v.asReadonly(),
 		reset,
@@ -490,6 +495,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 		fieldResourceOptions,
 		fieldResourceRequest,
 		fieldLabel,
+		fieldType
 	} satisfies FilterModelRef<T[number]['id'], T[number]>;
 }
 
@@ -519,6 +525,7 @@ export interface FilterModelRef<TId extends string = string, TFields extends RFi
 	fieldResourceOptions<R = unknown[], K = unknown>(fieldId: TId): HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>>;
   fieldResourceRequest(fieldId: TId): HttpResourceRequest | Signal<HttpResourceRequest>;
 	fieldLabel(fieldId: TId): string;
+	fieldType(fieldId: TId): TFields['__type'];
 }
 
 // Infer exact type from a specific buildFilterModel call

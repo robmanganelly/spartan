@@ -13,6 +13,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
 import { RICH_FILTER_MODEL } from '../engine/token';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -37,7 +38,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label  [for]="controlId()" />
+			<spartan-rich-filter-field-label  [for]="labelFor()" [label]="label()" />
 			<!-- operator dropdown -->
 			<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
@@ -45,7 +46,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			<input
 				class="w-40"
 				hlmInput
-				[id]="controlId()"
+				[id]="labelFor()"
 				[ngModel]="controlValue()"
 				(ngModelChange)="updateControlValue($event)"
 				[required]="fieldRequired()"
@@ -55,18 +56,11 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 		</div>
 	`,
 })
-export class TextField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
+export class TextField extends BaseFilterField<string> {
 
-	readonly id = input.required<string>();
 
-	readonly controlId = computed(() => 'text-' + this.id());
-
-	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = TextOperators;
-
-	readonly controlValue = computed(() => this.engine.fieldValue<string>(this.id()) ?? '');
 
 	readonly fieldRequired = computed(() => this.engine.fieldRequired(this.id()));
 

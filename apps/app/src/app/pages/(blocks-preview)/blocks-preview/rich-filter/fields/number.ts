@@ -13,6 +13,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
 import { RICH_FILTER_MODEL } from '../engine/token';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-number-field',
@@ -37,7 +38,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label  [for]="controlId()" />
+			<spartan-rich-filter-field-label  [for]="labelFor()" [label]="label()" />
 			<!-- operator dropdown -->
 			<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
@@ -48,7 +49,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				[id]="controlId()"
 				type="number"
 				[ngModel]="controlValue()"
-				(ngModelChange)="updateControlValue($event)"
+				(ngModelChange)="updateControl($event)"
 				[min]="options().min"
 				[max]="options().max"
 				[step]="options().step"
@@ -58,24 +59,16 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 		</div>
 	`,
 })
-export class NumberField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
+export class NumberField extends BaseFilterField<number> {
 
 
-	readonly id = input.required<string>();
 
 	readonly controlId = computed(() => 'number-' + this.id());
 
-	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = EqualityOperators;
 
-	readonly controlValue = computed(() => this.engine.fieldValue<number>(this.id()) ?? 0);
 
 	readonly options = computed(() => this.engine.fieldNumericOptions(this.id()));
 
-	protected updateControlValue(event: string) {
-		// html input of type number returns string, so we need to convert it to number
-		this.engine.patchFieldValue(this.id(), +event);
-	}
 }

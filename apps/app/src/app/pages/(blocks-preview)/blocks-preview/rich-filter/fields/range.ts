@@ -14,6 +14,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FieldTypes } from '../engine/types';
 import { RICH_FILTER_MODEL } from '../engine/token';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-range-field',
@@ -39,7 +40,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [for]="controlId()" />
+				<spartan-rich-filter-field-label [for]="labelFor()" [label]="label()" />
 				<!-- operator dropdown -->
 				<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
@@ -53,8 +54,8 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 						<hlm-range-slider
 							[min]="opts.min"
 							[max]="opts.max"
-							[value]="controlValue()"
-							(valueChange)="updateControlValue($event)"
+							[value]="controlValueAsRange()"
+							(valueChange)="updateControlValueFromRange($event)"
 						/>
 					</div>
 				</hlm-popover-content>
@@ -65,31 +66,28 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 		</hlm-popover>
 	`,
 })
-export class RangeField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
+export class RangeField extends BaseFilterField<{ min: number; max: number }> {
 
-	readonly id = input.required<string>();
 
 	readonly controlId = computed(() => 'range-' + this.id());
 
-	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = RangeOperators;
 
 	readonly options = computed(() => this.engine.fieldMinMax<typeof FieldTypes.daterange>(this.id()));
 
-	readonly controlValue = computed<RangeValue>(() => {
+	readonly controlValueAsRange = computed<RangeValue>(() => {
 		const v = this.engine.fieldValue<{ min: number; max: number } | null>(this.id());
 		const { min, max } = this.options();
 		return v ? [v.min, v.max] : [min ?? 0, max ?? 100];
 	});
 
 	protected readonly _displayRange = computed(() => {
-		const [low, high] = this.controlValue();
+		const [low, high] = this.controlValueAsRange();
 		return `${low >= 0 ? low : `(${low})`} - ${high >= 0 ? high : `(${high})`}`;
 	});
 
-	protected updateControlValue(value: RangeValue) {
+	protected updateControlValueFromRange(value: RangeValue) {
 		this.engine.patchFieldValue(this.id(), { min: value[0], max: value[1] });
 	}
 }

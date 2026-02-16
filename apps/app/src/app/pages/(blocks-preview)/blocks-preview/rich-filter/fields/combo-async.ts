@@ -27,6 +27,8 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { BaseFilterField } from './utils/base-field';
+import { unknown } from 'zod';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-async-field',
@@ -52,7 +54,7 @@ import { FieldOperator } from './utils/field-operator';
 				class="[&_hlm-input-group]:!rounded-none [&_hlm-input-group]:!border-l-0 [&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [for]="controlId()" />
+				<spartan-rich-filter-field-label [for]="labelFor()" [label]="label()" />
 				<!-- operator dropdown -->
 				<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
@@ -60,7 +62,7 @@ import { FieldOperator } from './utils/field-operator';
 				<hlm-combobox
 					[(search)]="_query"
 					[ngModel]="controlValue()"
-					(ngModelChange)="updateControlValue($event)"
+					(ngModelChange)="updateControl($event)"
 					[itemToString]="_itemToString()"
 				>
 					<hlm-combobox-input [placeholder]="placeholder()" class="rounded-none border-l-0" />
@@ -98,16 +100,9 @@ import { FieldOperator } from './utils/field-operator';
 		}
 	`,
 })
-export class ComboAsyncField implements OnInit {
-	private readonly engine = inject(RICH_FILTER_MODEL);
-
-	readonly id = input.required<string>();
-
-	readonly controlId = computed(() => 'combo-async-' + this.id());
+export class ComboAsyncField extends BaseFilterField<string> implements OnInit {
 
 	readonly operators = IdentityOperators;
-
-	readonly controlValue = computed(() => this.engine.fieldValue(this.id()));
 
 	readonly placeholder = computed(() => this.engine.fieldPlaceholder(this.id()));
 
@@ -163,8 +158,4 @@ export class ComboAsyncField implements OnInit {
 
 		return vs.map((v) => ({ raw: v, label: parser(v) }));
 	});
-
-	protected updateControlValue(value: unknown) {
-		this.engine.patchFieldValue(this.id(), value as string);
-	}
 }

@@ -11,6 +11,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-time-field',
@@ -33,7 +34,7 @@ import { FieldOperator } from './utils/field-operator';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [for]="controlId()" />
+			<spartan-rich-filter-field-label [for]="labelFor()" [label]="label()" />
 			<!-- operator dropdown -->
 			<spartan-rich-filter-field-operator [fieldId]="id()" [operators]="operators" />
 
@@ -41,7 +42,7 @@ import { FieldOperator } from './utils/field-operator';
 			<hlm-time-input
 				[displaySeconds]="true"
 				class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none"
-				[value]="controlValue()"
+				[value]="controlValueTime()"
 				(valueChange)="updateControlValue($event)"
 			/>
 
@@ -50,18 +51,15 @@ import { FieldOperator } from './utils/field-operator';
 		</div>
 	`,
 })
-export class TimeField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
+export class TimeField extends BaseFilterField<Date> {
 
-	readonly id = input.required<string>();
 
 	readonly controlId = computed(() => 'time-' + this.id());
 
-	readonly label = computed(() => this.engine.fieldLabel(this.id()));
 
 	readonly operators = TimeOperators;
 
-	readonly controlValue = computed(() => {
+	readonly controlValueTime = computed(() => {
 		const d = this.engine.fieldValue<Date>(this.id()) ?? new Date();
 		let hours = d.getHours();
 		const minutes = d.getMinutes();

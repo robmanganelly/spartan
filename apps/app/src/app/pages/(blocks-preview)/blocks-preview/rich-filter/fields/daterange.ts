@@ -14,6 +14,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { DatePipe } from '@angular/common';
 import { RICH_FILTER_MODEL } from '../engine/token';
+import { BaseFilterField } from './utils/base-field';
 
 @Component({
 	selector: 'spartan-rich-filter-daterange-field',
@@ -40,7 +41,7 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label  [for]="controlId()" />
+				<spartan-rich-filter-field-label  [for]="labelFor()" [label]="label()" />
 				<!-- operator dropdown -->
 				<spartan-rich-filter-field-operator  [fieldId]="id()" [operators]="operators" />
 
@@ -67,20 +68,12 @@ import { RICH_FILTER_MODEL } from '../engine/token';
 		</hlm-popover>
 	`,
 })
-export class DateRangeField {
-	private readonly engine = inject(RICH_FILTER_MODEL);
+export class DateRangeField extends BaseFilterField<{ start: Date; end: Date } | null> {
 
 	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateRangeTrigger');
 
-	readonly id = input.required<string>();
-
-	readonly controlId = computed(() => 'daterange-' + this.id());
-
-	readonly label = computed(() => this.engine.fieldLabel(this.id()));
-
 	readonly operators = RangeOperators;
 
-	readonly controlValue = computed(() => this.engine.fieldValue<{ start: Date; end: Date } | null>(this.id()));
 
 	readonly options = computed(() => this.engine.fieldMinMax(this.id()));
 
