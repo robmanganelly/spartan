@@ -56,10 +56,10 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 				</button>
 			</div>
 
-			<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-				<div class="flex divide-x" role="listbox">
+			<hlm-popover-content class="w-fit min-w-0 rounded-xl p-0" *hlmPopoverPortal="let ctx">
+				<div class="flex divide-x overflow-hidden" role="listbox">
 					<!-- Hours column -->
-					<div class="flex h-56 flex-col overflow-y-auto p-1" role="group" aria-label="Hours">
+					<div class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" role="group" aria-label="Hours">
 						@for (h of _hours; track h) {
 							<button
 								type="button"
@@ -75,7 +75,7 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 					</div>
 
 					<!-- Minutes column -->
-					<div class="flex h-56 flex-col overflow-y-auto p-1" role="group" aria-label="Minutes">
+					<div class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" role="group" aria-label="Minutes">
 						@for (m of _minuteSeconds; track m) {
 							<button
 								type="button"
@@ -92,7 +92,7 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 
 					<!-- Seconds column (conditional) -->
 					@if (displaySeconds()) {
-						<div class="flex h-56 flex-col overflow-y-auto p-1" role="group" aria-label="Seconds">
+						<div class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" role="group" aria-label="Seconds">
 							@for (s of _minuteSeconds; track s) {
 								<button
 									type="button"
@@ -109,7 +109,7 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 					}
 
 					<!-- Period column -->
-					<div class="flex h-56 flex-col p-1" role="group" aria-label="Period">
+					<div class="flex h-56 w-14 shrink-0 flex-col p-1" role="group" aria-label="Period">
 						@for (p of _periods; track p) {
 							<button
 								type="button"
