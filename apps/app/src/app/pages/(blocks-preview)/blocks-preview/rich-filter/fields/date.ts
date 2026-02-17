@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
@@ -8,11 +8,13 @@ import { HlmCalendarImports } from '@spartan-ng/helm/calendar';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { FHandler } from '../engine/handlers';
 import { TimeOperators } from '../engine/operators';
+import { FilterHandlerToken } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
-import { DatePipe } from '@angular/common';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -33,16 +35,20 @@ import { DatePipe } from '@angular/common';
 	providers: [provideIcons({ lucideCalendar, lucideX })],
 	host: {},
 	template: `
-		@let value = controlValue();
+		@let value = service.controlValue();
 		<hlm-popover sideOffset="5" align="end">
 			<div
 				hlmButtonGroup
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+				<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator
+					[operatorValue]="service.operatorValue()"
+					(operatorValueChange)="service.setOperator($event)"
+					[operators]="operators"
+				/>
 
 				<!-- popover with calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline" #dateTrigger>
@@ -50,41 +56,32 @@ import { DatePipe } from '@angular/common';
 					{{ value | date: 'mediumDate' }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-					@let opts = options();
 					<hlm-calendar
-					[min]="opts.min"
-					[max]="opts.max"
-					[date]="value" (dateChange)="updateControlValue($event)" />
+						[min]="service.min()"
+						[max]="service.max()"
+						[date]="value"
+						(dateChange)="updateControlValue($event)"
+					/>
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+				<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 			</div>
 		</hlm-popover>
 	`,
 })
 export class DateField {
+	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
 
-	private popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
-
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'date-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.date>;
 
 	readonly operators = TimeOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue<Date>(this.id()) ?? new Date());
-
-	readonly options = computed(() => this.state().fieldMinMax(this.id()));
-
 	updateControlValue(value: Date | null) {
-		this.state().patchFieldValue(this.id(), value);
 
-		// close popover after selecting range;
-		// wrapped in promise to let change detection settle
+		if (!value) return; // datepicker can return null, but null makes no sense in the context of the filter
+
+		this.service.updateControl(value);
 		Promise.resolve().then(() => {
 			this.popoverBtn()?.nativeElement.click();
 		});

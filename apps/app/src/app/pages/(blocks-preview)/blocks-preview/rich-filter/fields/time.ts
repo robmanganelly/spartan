@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
@@ -11,6 +10,9 @@ import { TimeOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FHandler } from '../engine/handlers';
+import { FilterHandlerToken } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 
 @Component({
 	selector: 'spartan-rich-filter-time-field',
@@ -33,48 +35,30 @@ import { FieldOperator } from './utils/field-operator';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator
+				[operatorValue]="service.operatorValue()"
+				(operatorValueChange)="service.setOperator($event)"
+				[operators]="operators"
+			/>
 
 			<!-- time input -->
 			<hlm-time-input
 				[displaySeconds]="true"
 				class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none"
-				[value]="controlValue()"
-				(valueChange)="updateControlValue($event)"
+				[value]="service.controlValue()"
+				(valueChange)="service.updateControl($event)"
 			/>
 
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 		</div>
 	`,
 })
 export class TimeField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'time-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.time>;
 
 	readonly operators = TimeOperators;
 
-	readonly controlValue = computed(() => {
-		const d = this.state().fieldValue<Date>(this.id()) ?? new Date();
-		let hours = d.getHours();
-		const minutes = d.getMinutes();
-		const seconds = d.getSeconds();
-		const period = hours >= 12 ? 'PM' : 'AM';
-		hours = hours % 12 || 12;
-		return { hours, minutes, seconds, period: period as 'AM' | 'PM' };
-	});
-
-	protected updateControlValue(value: { hours: number; minutes: number; seconds: number; period: string }) {
-		const d = new Date(this.state().fieldValue<Date>(this.id()) ?? new Date());
-		let hours = value.hours % 12;
-		if (value.period === 'PM') hours += 12;
-		d.setHours(hours, value.minutes, value.seconds, 0);
-		this.state().patchFieldValue(this.id(), d);
-	}
 }

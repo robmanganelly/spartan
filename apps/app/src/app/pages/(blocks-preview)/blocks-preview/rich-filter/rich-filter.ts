@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, Type } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, Injector, input, Type } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFunnel, lucideFunnelPlus, lucideFunnelX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -17,6 +17,8 @@ import { SelectField } from './fields/select';
 import { TextField } from './fields/text';
 import { TimeField } from './fields/time';
 import { ComboAsyncField } from './fields/combo-async';
+import { FIELD_HANDLERS_MAP } from './engine/handlers';
+import { FilterHandlerToken } from './engine/token';
 
 /** Maps each field type to the component class that renders it. */
 const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
@@ -45,7 +47,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 				@let active = fields();
 				<!--inputs rendered programmatically  -->
 				@for (field of active; track field.id) {
-					<ng-container *ngComponentOutlet="field.component; inputs: field.inputs" />
+					<ng-container *ngComponentOutlet="field.component; injector: field.injector" />
 				}
 				<!-- button comes after -->
 				@if (remaining.length) {
@@ -85,7 +87,14 @@ export class SpartanRichFilter {
 		return filter.fieldsArray().map((e) => ({
 			id: e.id,
 			component: FIELD_COMPONENT_MAP[e.__type],
-			inputs: { id: e.id, state: filter },
+			injector: Injector.create({
+				providers: [
+					{
+						provide: FilterHandlerToken,
+						useFactory: () => FIELD_HANDLERS_MAP[e.__type](e.id, filter.value),
+					},
+				],
+			}),
 		}));
 	});
 }

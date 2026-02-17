@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -12,6 +12,9 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
+import { FieldTypes } from '../engine/types';
+import { FHandler } from '../engine/handlers';
+import { FilterHandlerToken } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -36,39 +39,29 @@ import { FormsModule } from '@angular/forms';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator [operatorValue]="service.operatorValue()" (operatorValueChange)="service.setOperator($event)" [operators]="operators" />
 
 			<!-- text input -->
 			<input
 				class="w-40"
 				hlmInput
-				[id]="controlId()"
-				[ngModel]="controlValue()"
-				(ngModelChange)="updateControlValue($event)"
-				[required]="fieldRequired()"
+				[id]="service.formId()"
+				[ngModel]="service.controlValue()"
+				(ngModelChange)="service.updateControl($event)"
+				[required]="service.fieldRequired()"
 			/>
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 		</div>
 	`,
 })
 export class TextField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
-	readonly controlId = computed(() => 'text-' + this.id());
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.text>;
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
 
 	readonly operators = TextOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()) ?? '');
-
-	readonly fieldRequired = computed(() => this.state().fieldRequired(this.id()));
-
-	protected updateControlValue(value: string) {
-		this.state().patchFieldValue(this.id(), value);
-	}
 }

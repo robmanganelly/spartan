@@ -1,17 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
+import { FHandler } from '../engine/handlers';
 import { EqualityOperators } from '../engine/operators';
+import { FilterHandlerToken } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
-import { FormsModule } from '@angular/forms';
 
 @Component({
 	selector: 'spartan-rich-filter-number-field',
@@ -36,44 +38,33 @@ import { FormsModule } from '@angular/forms';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator
+				[operatorValue]="service.operatorValue()"
+				(operatorValueChange)="service.setOperator($event)"
+				[operators]="operators"
+			/>
 
 			<!-- numeric input -->
 			<input
 				class="w-28"
 				hlmInput
-				[id]="controlId()"
+				[id]="service.formId()"
 				type="number"
-				[ngModel]="controlValue()"
-				(ngModelChange)="updateControlValue($event)"
-				[min]="options().min"
-				[max]="options().max"
-				[step]="options().step"
+				[ngModel]="service.controlValue()"
+				(ngModelChange)="service.updateControl($event)"
+				[min]="service.min()"
+				[max]="service.max()"
+				[step]="service.step()"
 			/>
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 		</div>
 	`,
 })
 export class NumberField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'number-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.number>;
 
 	readonly operators = EqualityOperators;
-
-	readonly controlValue = computed(() => this.state().fieldValue<number>(this.id()) ?? 0);
-
-	readonly options = computed(() => this.state().fieldNumericOptions(this.id()))
-
-	protected updateControlValue(event: string) {
-		// html input of type number returns string, so we need to convert it to number
-		this.state().patchFieldValue(this.id(), +event);
-	}
-
 }

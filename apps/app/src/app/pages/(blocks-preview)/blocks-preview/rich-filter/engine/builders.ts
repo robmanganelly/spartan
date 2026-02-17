@@ -468,7 +468,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 	};
 
 	return {
-		value: _v.asReadonly(),
+		value: _v,
 		reset,
 		patchFieldOperator: patchOperator,
 		patchFieldValue: patchValue,
@@ -495,7 +495,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 
 // Base interface for component inputs - uses 'never' in contravariant positions to accept any specific implementation
 export interface FilterModelRef<TId extends string = string, TFields extends RFilterField = RFilterField> {
-	readonly value: Signal<Record<string, TFields>>;
+	readonly value: WritableSignal<Record<string, TFields>>;
 	reset(): void;
 	patchFieldOperator(fieldId: TId, operator: IOperator): void;
 	patchFieldValue(fieldId: TId, value: TFields['value']): void;

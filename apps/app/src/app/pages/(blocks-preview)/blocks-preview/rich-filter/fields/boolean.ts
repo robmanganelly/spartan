@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, Inject, inject, input } from '@angular/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
@@ -8,6 +8,9 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { FilterModelRef } from '../engine/builders';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
+import { FHandler, FIELD_HANDLERS_MAP } from '../engine/handlers';
+import { FieldTypes } from '../engine/types';
+import { FilterHandlerToken } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
@@ -29,31 +32,22 @@ import { FieldLabel } from './utils/field-label';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="service.formId()" [for]="service.controlLabel()" />
 			<!-- operator dropdown -->
 
 			<!-- boolean input -->
 			<div hlmButtonGroupSeparator></div>
 
 			<div hlmButtonGroupText class="dark:bg-input/30 bg-transparent">
-				<hlm-checkbox [id]="controlId()" [checked]="controlValue()" (checkedChange)="updateControl($event)" />
+				<hlm-checkbox [id]="service.formId()" [checked]="service.controlValue()" (checkedChange)="service.updateControl($event)" />
 			</div>
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()"></spartan-rich-filter-field-close>
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" ></spartan-rich-filter-field-close>
 		</div>
 	`,
 })
 export class BooleanField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
 
-	readonly controlId = computed(() => 'boolean-' + this.id());
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.boolean>;
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
-
-	readonly controlValue = computed(() => this.state().fieldValue<boolean>(this.id()));
-
-	protected updateControl(value: boolean) {
-		this.state().patchFieldValue(this.id(), value);
-	}
 }
