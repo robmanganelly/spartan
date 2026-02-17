@@ -4,7 +4,7 @@ import { FieldTypes, IFieldType } from './types';
 import { HttpResourceOptions, HttpResourceRequest } from '@angular/common/http';
 import { RangeValue } from '@spartan-ng/brain/range-slider';
 
-const buildTextField = (
+export const buildTextField = (
 	id: string,
 	value: string,
 	operator: ITextOperator,
