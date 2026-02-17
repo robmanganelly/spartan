@@ -135,7 +135,7 @@ export default class RichFilterPage {
 			max: new Date(),
 			label: 'Date Range',
 		}),
-		f.range('priceRange', null, Operators.between, { min: -100, max: 100, label: 'Price Range' }),
+		f.range('priceRange', [1,2], Operators.between, { min: -100, max: 100, label: 'Price Range' }),
 		f.time('time', new Date(), Operators.notPast, { label: 'Time' }),
 		f.combobox('country', '', Operators.is, {
 			options: comboboxOptions,

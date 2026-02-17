@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -13,6 +13,8 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FieldTypes } from '../engine/types';
+import { FHandler } from '../engine/handlers';
+import { FilterHandlerToken } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-range-field',
@@ -38,9 +40,13 @@ import { FieldTypes } from '../engine/types';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+				<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator
+					[operatorValue]="service.operatorValue()"
+					(operatorValueChange)="service.setOperator($event)"
+					[operators]="operators"
+				/>
 
 				<!-- popover with slider -->
 				<button variant="outline" hlmPopoverTrigger hlmBtn variant="outline">
@@ -48,48 +54,28 @@ import { FieldTypes } from '../engine/types';
 				</button>
 				<hlm-popover-content class="rounded-xl p-0 text-sm" *hlmPopoverPortal="let ctx">
 					<div class="p-4 text-sm">
-						@let opts = options();
 						<hlm-range-slider
-							[min]="opts.min"
-							[max]="opts.max"
-							[value]="controlValue()"
-							(valueChange)="updateControlValue($event)"
+							[min]="service.min()"
+							[max]="service.max()"
+							[value]="service.controlValue()"
+							(valueChange)="service.updateControl($event)"
 						/>
 					</div>
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+				<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 			</div>
 		</hlm-popover>
 	`,
 })
 export class RangeField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'range-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.range>;
 
 	readonly operators = RangeOperators;
 
-	readonly options = computed(() => this.state().fieldMinMax<typeof FieldTypes.daterange>(this.id()));
-
-	readonly controlValue = computed<RangeValue>(() => {
-		const v = this.state().fieldValue<{ min: number; max: number } | null>(this.id());
-		const { min, max } = this.options();
-		return v ? [v.min, v.max] : [min ?? 0, max ?? 100];
-	});
-
-
 	protected readonly _displayRange = computed(() => {
-		const [low, high] = this.controlValue();
+		const [low, high] = this.service.controlValue();
 		return `${low >= 0 ? low : `(${low})`} - ${high >= 0 ? high : `(${high})`}`;
 	});
-
-
-	protected updateControlValue(value: RangeValue) {
-		this.state().patchFieldValue(this.id(), { min: value[0], max: value[1] });
-	}
 }

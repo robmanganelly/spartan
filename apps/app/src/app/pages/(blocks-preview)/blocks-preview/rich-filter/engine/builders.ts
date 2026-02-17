@@ -2,6 +2,7 @@ import { computed, ResourceRef, Signal, signal, WritableSignal } from '@angular/
 import { IEqualityOperator, IIdentityOperator, IOperator, ITextOperator, ITimeOperator, Operators } from './operators';
 import { FieldTypes, IFieldType } from './types';
 import { HttpResourceOptions, HttpResourceRequest } from '@angular/common/http';
+import { RangeValue } from '@spartan-ng/brain/range-slider';
 
 const buildTextField = <S extends string>(
 	id: S,
@@ -101,6 +102,14 @@ export const buildSelectField = <S extends string>(
 		initialVisible?: boolean;
 		options: { label: string; value: unknown }[];
 		label?: string;
+		/**
+		 * Pass a custom function to extract the "label" to display
+		 * in the select input after selectiom
+		 * For best UX, it should be the same string shown in the options
+		 * @param item
+		 * @returns
+		 */
+		itemToString?: (item: unknown) => string;
 	},
 ) => ({
 	id,
@@ -111,6 +120,7 @@ export const buildSelectField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__options: options?.options,
 	__label: options?.label,
+	__itemToString: options?.itemToString ?? ((item: unknown) => String(item ?? '')),
 });
 
 export const buildComboField = <S extends string>(
@@ -183,9 +193,9 @@ export const buildBooleanField = <S extends string>(
 	__label: options?.label,
 });
 
-export const buildRangeField = <S extends string>(
+export const buildRangeField = <S extends string, K extends RangeValue>(
 	id: S,
-	value: { min: number; max: number } | null,
+	value: K,
 	operator: IOperator,
 	options?: {
 		initialVisible?: boolean;
@@ -200,8 +210,8 @@ export const buildRangeField = <S extends string>(
 	operator,
 	__index: 0,
 	__visible: !!options?.initialVisible,
-	__min: options?.min,
-	__max: options?.max,
+	__min: options?.min ?? 0,
+	__max: options?.max ?? 100,
 	__label: options?.label,
 });
 

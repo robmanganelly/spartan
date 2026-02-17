@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -14,6 +14,9 @@ import { IdentityOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FHandler } from '../engine/handlers';
+import { FilterHandlerToken } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 
 @Component({
 	selector: 'spartan-rich-filter-select-field',
@@ -40,61 +43,43 @@ import { FieldOperator } from './utils/field-operator';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator
+				[operatorValue]="service.operatorValue()"
+				(operatorValueChange)="service.setOperator($event)"
+				[operators]="operators"
+			/>
 
 			<!-- select field with options -->
 			<brn-select
 				class="inline-block [&>div>hlm-select-trigger>button]:rounded-none [&>div>hlm-select-trigger>button]:border-l-0"
 				placeholder="Select an option"
-				[value]="controlValue()"
-				(valueChange)="updateControlValue($event)"
+				[value]="service.controlValue()"
+				(valueChange)="service.updateControl($event)"
 			>
 				<hlm-select-trigger>
 					<hlm-select-value>
 						<div *brnSelectValue="let value">
-							<span>{{ optionMap().get(value) }}</span>
+							<span>{{ service.selectedOptionLabel() }}</span>
 						</div>
 					</hlm-select-value>
 				</hlm-select-trigger>
 				<hlm-select-content>
-					@for (option of options(); track option.value) {
+					@for (option of service.options(); track option.value) {
 						<hlm-option [value]="option.value">{{ option.label }}</hlm-option>
 					}
 				</hlm-select-content>
 			</brn-select>
 
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 		</div>
 	`,
 })
 export class SelectField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'select-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.select>;
 
 	readonly operators = IdentityOperators;
 
-	// TODO
-	readonly options = computed(()=>this.state().fieldOptions(this.id()))
-
-	readonly optionMap = computed(() => {
-		const map = new Map();
-		for (const option of this.options()) {
-			map.set(option.value, option.label);
-		}
-		return map;
-	})
-
-	readonly controlValue = computed(() => this.state().fieldValue<string>(this.id()));
-
-	protected updateControlValue(value: string | string[] | undefined) {
-		if (value == null) return;
-		this.state().patchFieldValue(this.id(), Array.isArray(value) ? value[0] : value);
-	}
 }

@@ -1,9 +1,8 @@
-import { computed, Signal, WritableSignal } from '@angular/core';
+import { computed, WritableSignal } from '@angular/core';
+import { BrnTimeValue } from '@spartan-ng/brain/time-input';
 import { RFilterField } from './builders';
 import { IOperator } from './operators';
 import { FieldTypes, IFieldType } from './types';
-import { BrnTimePeriod, BrnTimeValue } from '@spartan-ng/brain/time-input';
-
 
 export function throwHandlerException(message: string): never {
 	throw new Error(message);
@@ -19,7 +18,7 @@ function baseHandlers<T>(fieldId: string, state: WritableSignal<Record<string, R
 	const operatorValue = computed(() => state()[fieldId].operator);
 
 	function updateControl<T>(value: T) {
-			state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], value } } as typeof v) : v));
+		state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], value } } as typeof v) : v));
 	}
 
 	const closeField = () => {
@@ -69,20 +68,20 @@ export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<
 export function numberFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
 	const base = baseHandlers<number>(fieldId, state);
 
-	const min = computed(()=> {
+	const min = computed(() => {
 		const v = state()[fieldId];
 		return v.__type === FieldTypes.number ? (v.__min ?? Number.MIN_SAFE_INTEGER) : null;
-	})
+	});
 
-	const max = computed(()=> {
+	const max = computed(() => {
 		const v = state()[fieldId];
 		return v.__type === FieldTypes.number ? (v.__max ?? Number.MAX_SAFE_INTEGER) : null;
-	})
+	});
 
-	const step = computed(()=> {
+	const step = computed(() => {
 		const v = state()[fieldId];
 		return v.__type === FieldTypes.number ? (v.__step ?? 1) : null;
-	})
+	});
 
 	return {
 		...base,
@@ -120,12 +119,12 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 
 	const min = computed(() => {
 		const v = state()[fieldId];
-		return v.__type === FieldTypes.date && v.__min ? v.__min : null;
+		return v.__type === FieldTypes.time && v.__min ? v.__min : null;
 	});
 
 	const max = computed(() => {
 		const v = state()[fieldId];
-		return v.__type === FieldTypes.date && v.__max ? v.__max : null;
+		return v.__type === FieldTypes.time && v.__max ? v.__max : null;
 	});
 
 	// state understands Date, filter talks in { hours: number; minutes: number; seconds: number; period: 'AM' | 'PM' }
@@ -138,7 +137,7 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 	};
 
 	// state understands Date, filter talks in { hours: number; minutes: number; seconds: number; period: 'AM' | 'PM' }
-	const timeControlValue = computed(()=>{
+	const timeControlValue = computed(() => {
 		const v = (state()[fieldId].value ?? seed.value) as Date;
 		const hours = v.getHours();
 		const minutes = v.getMinutes();
@@ -149,11 +148,69 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 
 	return {
 		...base,
-		type: FieldTypes.date,
+		type: FieldTypes.time,
 		min,
 		max,
 		updateControl: updateTimeControl,
 		controlValue: timeControlValue,
+	};
+}
+
+export function selectFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+	const base = baseHandlers<unknown | unknown[]>(fieldId, state);
+
+	const updateSelectControl = (value: unknown | unknown[]) => {
+
+		const update = Array.isArray(value) ? value.at(0) : value;
+		base.updateControl(update);
+	};
+
+	const options = computed(() => {
+		const v = state()[fieldId];
+		if (v.__type === FieldTypes.select && v.__options) {
+			return v.__options;
+		}
+		else return [];
+	});
+
+	const selectedOptionLabel = computed(()=>{
+
+		const v = state()[fieldId];
+
+		if (v.__type !== FieldTypes.select) { return ''}
+
+		return v.__itemToString(base.controlValue())
+
+	})
+
+	return {
+		...base,
+		type: FieldTypes.select,
+		updateControl: updateSelectControl,
+		selectedOptionLabel,
+		options,
+	};
+}
+
+export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+	const seed = state()[fieldId];
+	const base = baseHandlers<[number, number]>(fieldId, state);
+
+	const min = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.range ? v.__min : null;
+	});
+
+	const max = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.range ? v.__max : null;
+	});
+
+	return {
+		...base,
+		type: FieldTypes.range,
+		min,
+		max,
 	};
 }
 
@@ -167,8 +224,8 @@ export const FIELD_HANDLERS_MAP = {
 	[FieldTypes.date]: dateFieldHandlers,
 	[FieldTypes.daterange]: () => {},
 	[FieldTypes.number]: numberFieldHandlers,
-	[FieldTypes.range]: () => {},
-	[FieldTypes.select]: () => {},
+	[FieldTypes.range]: rangeFieldHandlers,
+	[FieldTypes.select]: selectFieldHandlers,
 	[FieldTypes.text]: textFieldHandlers,
 	[FieldTypes.time]: timeFieldHandlers,
 };
