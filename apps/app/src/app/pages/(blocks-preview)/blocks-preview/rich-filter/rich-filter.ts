@@ -1,11 +1,24 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, Injector, model, Type } from '@angular/core';
+import {
+	ChangeDetectionStrategy,
+	Component,
+	DestroyableInjector,
+	DestroyRef,
+	effect,
+	inject,
+	Injector,
+	linkedSignal,
+	model,
+	Signal,
+	Type,
+	WritableSignal,
+} from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFunnel, lucideFunnelPlus, lucideFunnelX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
-import { FilterModelRef } from './engine/builders';
+import { FilterModelRef, RFilterField } from './engine/builders';
 import { FIELD_HANDLERS_MAP } from './engine/handlers';
 import { FILTER_HANDLER } from './engine/token';
 import { FieldTypes, IFieldType } from './engine/types';
@@ -40,10 +53,10 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [provideIcons({ lucideFunnel, lucideFunnelX, lucideFunnelPlus })],
 	template: `
-		@let filter = state();
+		@let engine = state();
 		<div class="flex w-full gap-2">
 			<div class="flex flex-1 flex-wrap gap-2">
-				@let remaining = filter.availableFields();
+				@let remaining = engine.availableFields();
 				@let active = fields();
 				<!--inputs rendered programmatically  -->
 				@for (field of active; track field.id) {
@@ -58,7 +71,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 						<hlm-dropdown-menu class="w-48">
 							<hlm-dropdown-menu-group>
 								@for (field of remaining; track field.id) {
-									<button hlmDropdownMenuItem (click)="filter.addField(field.id)">
+									<button hlmDropdownMenuItem (click)="engine.addField(field.id)">
 										<span>{{ field.__label ?? field.id }}</span>
 									</button>
 								} @empty {
@@ -71,7 +84,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 			</div>
 			<!--ANYTHING HERE WILL BE OUTSIDE WRAPPING DIV -->
 			@if (active.length) {
-				<button variant="destructive" size="icon" hlmBtn (click)="filter.clear()">
+				<button variant="destructive" size="icon" hlmBtn (click)="engine.clear()">
 					<ng-icon size="sm" hlm name="lucideFunnelX" />
 				</button>
 			}
@@ -81,26 +94,62 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 export class SpartanRichFilter {
 	readonly state = model.required<FilterModelRef>();
 
-	readonly fieldArray = computed(() => this.state().fieldsArray());
-	readonly stateValue = computed(() => this.state().value);
+	private readonly injectorCache = new Map<string, DestroyableInjector>();
+
+	private injectorCleanup() {
+		this.injectorCache.forEach((injector) => injector.destroy());
+		this.injectorCache.clear();
+	}
+
+	/**
+	 * removes all the injectors when the component is destroyed
+	 */
+	destroyCb = inject(DestroyRef).onDestroy(this.injectorCleanup.bind(this));
+
+	private getCachedInjector(fId: string, fType: IFieldType, state: Signal<FilterModelRef>) {
+		const k = `${fId}-${fType}`;
+		const inj =
+			this.injectorCache.get(k) ??
+			Injector.create({
+				providers: [
+					{
+						provide: FILTER_HANDLER,
+						useFactory: () => FIELD_HANDLERS_MAP[fType](fId, state().value),
+					},
+				],
+			});
+
+		if (!this.injectorCache.has(k)) {
+			this.injectorCache.set(k, inj);
+		}
+
+		return inj;
+	}
 
 	/** Computed array of { component, inputs } entries for NgComponentOutlet. */
-	readonly fields = computed(() => {
-		return this.fieldArray().map((e) => {
-			{
-				const id = e.id;
-				const component = FIELD_COMPONENT_MAP[e.__type];
-				const injector = Injector.create({
-					providers: [
-						{
-							provide: FILTER_HANDLER,
-							useFactory: () => FIELD_HANDLERS_MAP[e.__type](e.id, this.state().value),
-						},
-					],
-				});
-				console.log('recreating component for field', e.id, 'with type', e.__type);
-				return { id, component, injector };
-			}
-		});
+	readonly fields = linkedSignal(() => {
+		return this.state()
+			.fieldsArray()
+			.map((e) => {
+				{
+					const id = e.id;
+					const component = FIELD_COMPONENT_MAP[e.__type];
+					const injector = this.getCachedInjector(id, e.__type, this.state);
+					return { id, component, injector };
+				}
+			});
+	});
+
+	/**
+	 * In some advanced use cases, the user might want to change the model (the reference) from outside of this component, (e.g. populating the model with asynchronous options, or router data).
+	 * In that case, the view and injectors will be reset to avoid staleness.
+	 * By cleaning the fields and injectors, we're forcing the component to recreate them with the latest copy of the state
+	 *
+	 * The user must account for this fact in their implementation
+	 *
+	 */
+	onStateChange = effect(() => {
+		this.state() && this.fields.set([]);
+		this.injectorCleanup();
 	});
 }
