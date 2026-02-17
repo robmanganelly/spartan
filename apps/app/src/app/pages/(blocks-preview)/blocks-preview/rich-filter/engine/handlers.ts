@@ -4,15 +4,32 @@ import { RFilterField } from './builders';
 import { IOperator } from './operators';
 import { FieldTypes, IFieldType } from './types';
 
-export function throwHandlerException(message: string): never {
-	throw new Error(message);
+/**
+ * helper function to create typed handlers
+ * @returns
+ */
+function vGuard<T>(): T {
+	return undefined as T;
 }
 
-function baseHandlers<T>(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	// state keeps the initial value when the function is call, which will be used to reset the field when needed
+export function throwHandlerException(message: string): never {
+	throw new Error(`Exception in Handler: ${message}`);
+}
 
+function baseHandlers<T, K extends IFieldType>(
+	fieldId: string,
+	state: WritableSignal<Record<string, RFilterField>>,
+	typeGuard: K,
+	valueGuard: () => T,
+) {
 	const _seed = state()[fieldId];
-	const formId = computed(() => `${FieldTypes.boolean}-${fieldId}` as const);
+
+	const type =
+		_seed.__type === typeGuard
+			? typeGuard
+			: throwHandlerException(`Field type mismatch. Expected ${typeGuard}, got ${_seed.__type}`);
+
+	const formId = computed(() => `${type}-${fieldId}` as const);
 	const controlValue = computed<T>(() => state()[fieldId].value as T);
 	const controlLabel = computed(() => state()[fieldId].__label ?? fieldId);
 	const operatorValue = computed(() => state()[fieldId].operator);
@@ -38,20 +55,23 @@ function baseHandlers<T>(fieldId: string, state: WritableSignal<Record<string, R
 		state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], operator: update } } as typeof v) : v));
 	};
 
-	return { formId, controlValue, controlLabel, operatorValue, closeField, setOperator, updateControl };
+	return { formId, controlValue, controlLabel, operatorValue, closeField, setOperator, updateControl, type };
 }
 
 export function booleanFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers<boolean>(fieldId, state);
+	const {
+		operatorValue: _,
+		setOperator: __,
+		...rest
+	} = baseHandlers(fieldId, state, FieldTypes.boolean, vGuard<boolean>);
 
 	return {
-		...base,
-		type: FieldTypes.boolean,
+		...rest,
 	};
 }
 
 export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers<string>(fieldId, state);
+	const base = baseHandlers(fieldId, state, FieldTypes.text, vGuard<string>);
 
 	const fieldRequired = computed(() => {
 		const v = state()[fieldId];
@@ -66,7 +86,7 @@ export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<
 }
 
 export function numberFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers<number>(fieldId, state);
+	const base = baseHandlers(fieldId, state, FieldTypes.number, vGuard<number>);
 
 	const min = computed(() => {
 		const v = state()[fieldId];
@@ -93,7 +113,7 @@ export function numberFieldHandlers(fieldId: string, state: WritableSignal<Recor
 }
 
 export function dateFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers<Date>(fieldId, state);
+	const base = baseHandlers(fieldId, state, FieldTypes.date, vGuard<Date>);
 
 	const min = computed(() => {
 		const v = state()[fieldId];
@@ -115,7 +135,7 @@ export function dateFieldHandlers(fieldId: string, state: WritableSignal<Record<
 
 export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
 	const seed = state()[fieldId];
-	const base = baseHandlers<Date>(fieldId, state);
+	const base = baseHandlers(fieldId, state, FieldTypes.time, vGuard<Date>);
 
 	const min = computed(() => {
 		const v = state()[fieldId];
@@ -157,10 +177,9 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 }
 
 export function selectFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers<unknown | unknown[]>(fieldId, state);
+	const base = baseHandlers(fieldId, state, FieldTypes.select, vGuard<unknown | unknown[]>);
 
 	const updateSelectControl = (value: unknown | unknown[]) => {
-
 		const update = Array.isArray(value) ? value.at(0) : value;
 		base.updateControl(update);
 	};
@@ -169,19 +188,18 @@ export function selectFieldHandlers(fieldId: string, state: WritableSignal<Recor
 		const v = state()[fieldId];
 		if (v.__type === FieldTypes.select && v.__options) {
 			return v.__options;
-		}
-		else return [];
+		} else return [];
 	});
 
-	const selectedOptionLabel = computed(()=>{
-
+	const selectedOptionLabel = computed(() => {
 		const v = state()[fieldId];
 
-		if (v.__type !== FieldTypes.select) { return ''}
+		if (v.__type !== FieldTypes.select) {
+			return '';
+		}
 
-		return v.__itemToString(base.controlValue())
-
-	})
+		return v.__itemToString(base.controlValue());
+	});
 
 	return {
 		...base,
@@ -193,8 +211,7 @@ export function selectFieldHandlers(fieldId: string, state: WritableSignal<Recor
 }
 
 export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const seed = state()[fieldId];
-	const base = baseHandlers<[number, number]>(fieldId, state);
+	const base = baseHandlers(fieldId, state, FieldTypes.range, vGuard<[number, number]>);
 
 	const min = computed(() => {
 		const v = state()[fieldId];
@@ -214,15 +231,97 @@ export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record
 	};
 }
 
+export function dateRangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+	const base = baseHandlers(fieldId, state, FieldTypes.daterange, vGuard<[Date, Date]>);
+
+	const min = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.daterange ? v.__min : null;
+	});
+
+	const max = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.daterange ? v.__max : null;
+	});
+
+	return {
+		...base,
+		type: FieldTypes.daterange,
+		min,
+		max,
+	};
+}
+
+export function comboboxFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+	const base = baseHandlers(fieldId, state, FieldTypes.combobox, vGuard<unknown>);
+
+	const options = computed(() => {
+		const v = state()[fieldId];
+		if (v.__type === FieldTypes.combobox && v.__options) {
+			return v.__options;
+		} else return [];
+	});
+
+	const placeholder = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.combobox && v.__placeholder ? v.__placeholder : '';
+	});
+
+	return {
+		...base,
+		options,
+		placeholder,
+		type: FieldTypes.combobox,
+	};
+}
+
+export function asyncComboFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+	const __seed = state()[fieldId];
+	const base = baseHandlers(fieldId, state, FieldTypes.asyncCombobox, vGuard<unknown>);
+
+	const placeholder = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.asyncCombobox && v.__placeholder ? v.__placeholder : '';
+	});
+
+	const itemToString = computed(() => {
+		const v = state()[fieldId];
+		return v.__type === FieldTypes.asyncCombobox && v.__itemToString
+			? v.__itemToString
+			: (item: unknown) => String(item);
+	});
+
+	const fieldResourceRequest = computed(() => {
+		const v = state()[fieldId];
+		return (
+			(v.__type === FieldTypes.asyncCombobox && v.__resourceRequest) ||
+			throwHandlerException('Resource request is required for async combobox field')
+		);
+	});
+
+	const fieldResourceOptions =
+		(__seed.__type === FieldTypes.asyncCombobox && __seed.__resourceOptions) ||
+		throwHandlerException('Resource options is required for async combobox field');
+
+	return {
+		...base,
+		placeholder,
+		itemToString,
+		fieldResourceRequest,
+		fieldResourceOptions,
+		type: FieldTypes.asyncCombobox,
+	};
+}
+
 // functions above are only exported for unit testing purposes
 // for any other use case, consider using the FIELD_HANDLERS_MAP
 
 export const FIELD_HANDLERS_MAP = {
-	[FieldTypes.asyncCombobox]: () => {},
+	[FieldTypes.asyncCombobox]: asyncComboFieldHandlers,
 	[FieldTypes.boolean]: booleanFieldHandlers,
-	[FieldTypes.combobox]: () => {},
+	[FieldTypes.combobox]: comboboxFieldHandlers,
 	[FieldTypes.date]: dateFieldHandlers,
-	[FieldTypes.daterange]: () => {},
+	[FieldTypes.daterange]: dateRangeFieldHandlers,
 	[FieldTypes.number]: numberFieldHandlers,
 	[FieldTypes.range]: rangeFieldHandlers,
 	[FieldTypes.select]: selectFieldHandlers,

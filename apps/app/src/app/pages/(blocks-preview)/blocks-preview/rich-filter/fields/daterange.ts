@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
@@ -13,6 +13,9 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { DatePipe } from '@angular/common';
+import { FHandler } from '../engine/handlers';
+import { FilterHandlerToken } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 
 @Component({
 	selector: 'spartan-rich-filter-daterange-field',
@@ -39,9 +42,13 @@ import { DatePipe } from '@angular/common';
 				class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 			>
 				<!-- label -->
-				<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+				<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 				<!-- operator dropdown -->
-				<spartan-rich-filter-field-operator [state] ="state()" [fieldId]="id()" [operators]="operators" />
+				<spartan-rich-filter-field-operator
+					[operatorValue]="service.operatorValue()"
+					(operatorValueChange)="service.setOperator($event)"
+					[operators]="operators"
+				/>
 
 				<!-- popover with range calendar -->
 				<button hlmPopoverTrigger hlmBtn variant="outline" #dateRangeTrigger>
@@ -49,10 +56,9 @@ import { DatePipe } from '@angular/common';
 					{{ startDate() | date: 'MMM d' }} - {{ endDate() | date: 'MMM d' }}
 				</button>
 				<hlm-popover-content class="w-auto rounded-xl p-0" *hlmPopoverPortal="let ctx">
-				@let opts = options();
-				<hlm-calendar-range
-						[min]="opts.min"
-						[max]="opts.max"
+					<hlm-calendar-range
+						[min]="service.min()"
+						[max]="service.max()"
 						[startDate]="startDate()"
 						(startDateChange)="updateStartDate($event)"
 						[endDate]="endDate()"
@@ -61,46 +67,37 @@ import { DatePipe } from '@angular/common';
 				</hlm-popover-content>
 
 				<!-- close button -->
-				<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+				<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 			</div>
 		</hlm-popover>
 	`,
 })
 export class DateRangeField {
+
 	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateRangeTrigger');
+	private readonly tempStart = signal<Date | null>(null);
 
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.daterange>;
+	protected readonly operators = RangeOperators;
 
-	readonly controlId = computed(() => 'daterange-' + this.id());
+	readonly startDate = computed(() => this.service.controlValue()[0]);
+	readonly endDate = computed(() => this.service.controlValue()[1]);
 
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
-
-	readonly operators = RangeOperators;
-
-	readonly controlValue = computed(() => this.state().fieldValue<{ start: Date; end: Date } | null>(this.id()));
-
-	readonly options = computed(() => this.state().fieldMinMax(this.id()));
-
-	readonly startDate = computed(() => this.controlValue()?.start ?? new Date());
-	readonly endDate = computed(() => this.controlValue()?.end ?? new Date());
-
-	private readonly _tempStart = signal<Date | null>(null);
 
 	// update start date should not trigger a change in the model
 	// until both start and end date are selected,
 	protected updateStartDate(date: Date) {
-		this._tempStart.set(date);
+		this.tempStart.set(date);
 	}
 
 	protected updateEndDate(date: Date) {
-		const start = this._tempStart();
+		const start = this.tempStart();
 		if (!start || !date) {
 			return;
 		}
 
-		this.state().patchFieldValue(this.id(), { start, end: date });
-		this._tempStart.set(null);
+		this.service.updateControl([start,date]);
+		this.tempStart.set(null);
 
 		// close popover after selecting range;
 		// wrapped in promise to let change detection settle

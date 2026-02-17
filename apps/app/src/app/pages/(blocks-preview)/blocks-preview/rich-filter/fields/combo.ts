@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { FilterModelRef } from '../engine/builders';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -14,6 +14,9 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
+import { FHandler } from '../engine/handlers';
+import { FilterHandlerToken } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-field',
@@ -41,17 +44,21 @@ import { FormsModule } from '@angular/forms';
 			class="[&_hlm-input-group]:!rounded-none [&_hlm-input-group]:!border-l-0 [&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="label()" [for]="controlId()" />
+			<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [state]="state()" [fieldId]="id()" [operators]="operators" />
+			<spartan-rich-filter-field-operator
+				[operatorValue]="service.operatorValue()"
+				(operatorValueChange)="service.setOperator($event)"
+				[operators]="operators"
+			/>
 
 			<!-- select field with options -->
-			<hlm-combobox [ngModel]="controlValue()" (ngModelChange)="updateControlValue($event)">
-				<hlm-combobox-input [placeholder]="placeholder()" class="rounded-none border-l-0" />
+			<hlm-combobox [ngModel]="service.controlValue()" (ngModelChange)="service.updateControl($event)">
+				<hlm-combobox-input [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
 					<div hlmComboboxList>
-						@for (framework of options(); track $index) {
+						@for (framework of service.options(); track $index) {
 							<hlm-combobox-item [value]="framework">{{ framework.label }}</hlm-combobox-item>
 						}
 					</div>
@@ -59,27 +66,13 @@ import { FormsModule } from '@angular/forms';
 			</hlm-combobox>
 
 			<!-- close button -->
-			<spartan-rich-filter-field-close [state]="state()" [fieldId]="id()" />
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" />
 		</div>
 	`,
 })
 export class ComboField {
-	readonly id = input.required<string>();
-	readonly state = input.required<FilterModelRef>();
-
-	readonly controlId = computed(() => 'combo-' + this.id());
-
-	readonly label = computed(() => this.state().fieldLabel(this.id()));
+	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.combobox>;
 
 	readonly operators = IdentityOperators;
 
-	readonly controlValue = computed(() => this.state().fieldValue(this.id()));
-
-	readonly placeholder = computed(() => this.state().fieldPlaceholder(this.id()));
-
-	protected updateControlValue(value: string) {
-		this.state().patchFieldValue(this.id(), value);
-	}
-
-	readonly options = computed(() => this.state().fieldOptions(this.id()) ?? []);
 }

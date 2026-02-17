@@ -153,9 +153,7 @@ export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>
 		label?: string;
 		initialVisible?: boolean;
 		placeholder?: string;
-		resourceOptions:
-			| HttpResourceOptions<R extends Array<infer U> ? U : R[], unknown>
-			| Signal<HttpResourceOptions<R extends Array<infer U> ? U[] : R[], unknown>>;
+		resourceOptions: HttpResourceOptions<R extends Array<infer U> ? U[] : R[], unknown>
 		resourceRequest: HttpResourceRequest | Signal<HttpResourceRequest>;
 		itemToString?: (item: R extends Array<infer U> ? U : R) => string;
 	},
@@ -426,22 +424,6 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 		} else {
 			return _base[fieldId].value as K;
 		}
-	};
-
-	const fieldResource = <R = unknown>(fieldId: T[number]['id']): ResourceRef<R> => {
-		const field = _v()[fieldId] as T[number] & { __resourceRef?: ResourceRef<R> };
-		if (!field.__resourceRef) {
-			throw new Error(`Field with id ${fieldId} does not have a resource`);
-		}
-		return field.__resourceRef;
-	};
-
-	const fieldSearch = (fieldId: T[number]['id']): WritableSignal<string> => {
-		const field = _v()[fieldId] as T[number] & { __search?: WritableSignal<string> };
-		if (!field.__search) {
-			throw new Error(`Field with id ${fieldId} does not have a search signal`);
-		}
-		return field.__search;
 	};
 
 	const fieldItemToString = <I = unknown>(fieldId: T[number]['id']): ((item: I) => string) => {
