@@ -4,8 +4,8 @@ import { FieldTypes, IFieldType } from './types';
 import { HttpResourceOptions, HttpResourceRequest } from '@angular/common/http';
 import { RangeValue } from '@spartan-ng/brain/range-slider';
 
-const buildTextField = <S extends string>(
-	id: S,
+const buildTextField = (
+	id: string,
 	value: string,
 	operator: ITextOperator,
 	options?: {
@@ -24,10 +24,11 @@ const buildTextField = <S extends string>(
 	__required: !!options?.required,
 	__placeholder: options?.placeholder,
 	__label: options?.label,
+	__reset: value,
 });
 
-export const buildNumberField = <S extends string>(
-	id: S,
+export const buildNumberField = (
+	id: string,
 	value: number,
 	operator: IEqualityOperator,
 	options?: {
@@ -47,11 +48,12 @@ export const buildNumberField = <S extends string>(
 	__min: options?.min,
 	__max: options?.max,
 	__step: options?.step,
+	__reset: value,
 	__label: options?.label,
 });
 
-export const buildDateField = <S extends string>(
-	id: S,
+export const buildDateField = (
+	id: string,
 	value: Date,
 	operator: IEqualityOperator,
 	options?: {
@@ -70,10 +72,11 @@ export const buildDateField = <S extends string>(
 	__min: options?.min,
 	__max: options?.max,
 	__label: options?.label,
+	__reset: value,
 });
 
-export const buildTimeField = <S extends string>(
-	id: S,
+export const buildTimeField = (
+	id: string,
 	value: Date,
 	operator: ITimeOperator,
 	options?: {
@@ -91,11 +94,12 @@ export const buildTimeField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__min: options?.min,
 	__max: options?.max,
+	__reset: value,
 	__label: options?.label,
 });
 
-export const buildSelectField = <S extends string>(
-	id: S,
+export const buildSelectField = (
+	id: string,
 	value: string | null,
 	operator: IIdentityOperator,
 	options: {
@@ -121,10 +125,11 @@ export const buildSelectField = <S extends string>(
 	__options: options?.options,
 	__label: options?.label,
 	__itemToString: options?.itemToString ?? ((item: unknown) => String(item ?? '')),
+	__reset: value,
 });
 
-export const buildComboField = <S extends string>(
-	id: S,
+export const buildComboField = (
+	id: string,
 	value: string,
 	operator: IIdentityOperator,
 	options: {
@@ -143,17 +148,18 @@ export const buildComboField = <S extends string>(
 	__options: options?.options,
 	__placeholder: options?.placeholder,
 	__label: options?.label,
+	__reset: value,
 });
 
-export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>(
-	id: S,
+export const buildComboFieldAsync = <R extends Array<unknown>>(
+	id: string,
 	value: string,
 	operator: IIdentityOperator,
 	options: {
 		label?: string;
 		initialVisible?: boolean;
 		placeholder?: string;
-		resourceOptions: HttpResourceOptions<R extends Array<infer U> ? U[] : R[], unknown>
+		resourceOptions: HttpResourceOptions<R extends Array<infer U> ? U[] : R[], unknown>;
 		resourceRequest: HttpResourceRequest | Signal<HttpResourceRequest>;
 		itemToString?: (item: R extends Array<infer U> ? U : R) => string;
 	},
@@ -168,11 +174,12 @@ export const buildComboFieldAsync = <R extends Array<unknown>, S extends string>
 	__resourceOptions: options?.resourceOptions,
 	__resourceRequest: options?.resourceRequest,
 	__itemToString: options.itemToString ?? ((item: R extends Array<infer U> ? U : R) => String(item ?? '')),
+	__reset: value,
 	__label: options?.label,
 });
 
-export const buildBooleanField = <S extends string>(
-	id: S,
+export const buildBooleanField = (
+	id: string,
 	value: boolean | null,
 	options?: {
 		initialVisible?: boolean;
@@ -189,10 +196,11 @@ export const buildBooleanField = <S extends string>(
 	__index: 0,
 	__visible: !!options?.initialVisible,
 	__label: options?.label,
+	__reset: value,
 });
 
-export const buildRangeField = <S extends string, K extends RangeValue>(
-	id: S,
+export const buildRangeField = <K extends RangeValue>(
+	id: string,
 	value: K,
 	operator: IOperator,
 	options?: {
@@ -211,10 +219,11 @@ export const buildRangeField = <S extends string, K extends RangeValue>(
 	__min: options?.min ?? 0,
 	__max: options?.max ?? 100,
 	__label: options?.label,
+	__reset: value,
 });
 
-export const buildDateRangeField = <S extends string>(
-	id: S,
+export const buildDateRangeField = (
+	id: string,
 	value: { start: Date; end: Date },
 	operator: IOperator,
 	options?: {
@@ -232,6 +241,7 @@ export const buildDateRangeField = <S extends string>(
 	__visible: !!options?.initialVisible,
 	__min: options?.min,
 	__max: options?.max,
+	__reset: value,
 	__label: options?.label,
 });
 
