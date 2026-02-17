@@ -31,7 +31,7 @@ import { FILTER_HANDLER } from '../engine/token';
 			class="[&>brn-select>div>hlm-select-trigger>button]:rounded-l-none [&>brn-select>div>hlm-select-trigger>button]:rounded-r-none"
 		>
 			<!-- label -->
-			<spartan-rich-filter-field-label [label]="service.formId()" [for]="service.controlLabel()" />
+			<spartan-rich-filter-field-label [for]="service.formId()" [label]="service.controlLabel()" />
 			<!-- operator dropdown -->
 
 			<!-- boolean input -->

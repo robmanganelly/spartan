@@ -279,12 +279,17 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
 
 	const _baseIndex = signal(fields.length);
 
-	const fieldsArray = computed(() => {
-		const v = _v();
-		const unsorted = fields.map((f) => v[f.id as T[number]['id']]).filter((f) => f.__visible);
-		unsorted.sort((a, b) => a.__index - b.__index);
-		return unsorted;
-	});
+	const fieldsArray = computed(
+		() => {
+			const v = _v();
+			const unsorted = fields.map((f) => v[f.id as T[number]['id']]).filter((f) => f.__visible);
+			unsorted.sort((a, b) => a.__index - b.__index);
+			return unsorted;
+		},
+		{
+			equal: (a, b) => a.length === b.length && a.every((v, i) => v.id === b[i].id),
+		},
+	);
 
 	const availableFields = computed(() => {
 		const v = _v();

@@ -22,12 +22,12 @@ function baseHandlers<T, K extends IFieldType>(
 	typeGuard: K,
 	valueGuard: () => T,
 ) {
-	const _seed = state()[fieldId];
+	const current = state()[fieldId];
 
 	const type =
-		_seed.__type === typeGuard
+		current.__type === typeGuard
 			? typeGuard
-			: throwHandlerException(`Field type mismatch. Expected ${typeGuard}, got ${_seed.__type}`);
+			: throwHandlerException(`Field type mismatch. Expected ${typeGuard}, got ${current.__type}`);
 
 	const readonlyModel = computed(() => state()[fieldId] as CastRFilterField<K>);
 
@@ -43,16 +43,16 @@ function baseHandlers<T, K extends IFieldType>(
 	const closeField = () => {
 		state.update((v) => {
 			const { [fieldId]: _, ...rest } = v;
-			return { ...rest, [fieldId]: { ..._seed, __visible: false } } as typeof v;
+			return { ...rest, [fieldId]: { ...current, __visible: false } } as typeof v;
 		});
 	};
 
 	const setOperator = (operator: IOperator | IOperator[] | undefined) => {
 		const update = operator
 			? Array.isArray(operator)
-				? (operator.at(0) ?? _seed.operator)
+				? (operator.at(0) ?? current.operator)
 				: operator
-			: _seed.operator;
+			: current.operator;
 
 		state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], operator: update } } as typeof v) : v));
 	};
