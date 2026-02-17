@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
+
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -15,7 +15,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FHandler } from '../engine/handlers';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
 
 @Component({
@@ -78,7 +78,7 @@ import { FieldTypes } from '../engine/types';
 	`,
 })
 export class SelectField {
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.select>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.select>;
 
 	readonly operators = IdentityOperators;
 

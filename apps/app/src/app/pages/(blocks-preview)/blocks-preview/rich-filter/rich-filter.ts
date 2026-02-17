@@ -5,7 +5,6 @@ import { lucideFunnel, lucideFunnelPlus, lucideFunnelX } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
-import { FilterModelRef } from './engine/builders';
 import { FieldTypes, IFieldType } from './engine/types';
 import { BooleanField } from './fields/boolean';
 import { ComboField } from './fields/combo';
@@ -18,7 +17,8 @@ import { TextField } from './fields/text';
 import { TimeField } from './fields/time';
 import { ComboAsyncField } from './fields/combo-async';
 import { FIELD_HANDLERS_MAP } from './engine/handlers';
-import { FilterHandlerToken } from './engine/token';
+import { FILTER_HANDLER } from './engine/token';
+import { FilterModelRef } from './engine/builders';
 
 /** Maps each field type to the component class that renders it. */
 const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
@@ -79,6 +79,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 	`,
 })
 export class SpartanRichFilter {
+
 	readonly state = input.required<FilterModelRef>();
 
 	/** Computed array of { component, inputs } entries for NgComponentOutlet. */
@@ -90,7 +91,7 @@ export class SpartanRichFilter {
 			injector: Injector.create({
 				providers: [
 					{
-						provide: FilterHandlerToken,
+						provide: FILTER_HANDLER,
 						useFactory: () => FIELD_HANDLERS_MAP[e.__type](e.id, filter.value),
 					},
 				],

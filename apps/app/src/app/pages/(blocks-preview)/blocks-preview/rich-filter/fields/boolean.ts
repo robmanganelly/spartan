@@ -5,12 +5,11 @@ import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
-import { FilterModelRef } from '../engine/builders';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FHandler, FIELD_HANDLERS_MAP } from '../engine/handlers';
 import { FieldTypes } from '../engine/types';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
@@ -48,6 +47,6 @@ import { FilterHandlerToken } from '../engine/token';
 })
 export class BooleanField {
 
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.boolean>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.boolean>;
 
 }

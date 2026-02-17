@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
+
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
@@ -14,7 +14,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { DatePipe } from '@angular/common';
 import { FHandler } from '../engine/handlers';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
 
 @Component({
@@ -77,7 +77,7 @@ export class DateRangeField {
 	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateRangeTrigger');
 	private readonly tempStart = signal<Date | null>(null);
 
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.daterange>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.daterange>;
 	protected readonly operators = RangeOperators;
 
 	readonly startDate = computed(() => this.service.controlValue()[0]);

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
+
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
@@ -15,7 +15,7 @@ import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
 import { FHandler } from '../engine/handlers';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
 
 @Component({
@@ -71,7 +71,7 @@ import { FieldTypes } from '../engine/types';
 	`,
 })
 export class ComboField {
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.combobox>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.combobox>;
 
 	readonly operators = IdentityOperators;
 

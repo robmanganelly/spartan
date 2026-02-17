@@ -13,7 +13,7 @@ import { debounceTime } from 'rxjs';
 import { QueryToken } from '../engine/constants';
 import { FHandler } from '../engine/handlers';
 import { IdentityOperators } from '../engine/operators';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
@@ -92,7 +92,7 @@ import { FieldOperator } from './utils/field-operator';
 	`,
 })
 export class ComboAsyncField {
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.asyncCombobox>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.asyncCombobox>;
 
 	protected readonly operators = IdentityOperators;
 	protected readonly _query = signal('');

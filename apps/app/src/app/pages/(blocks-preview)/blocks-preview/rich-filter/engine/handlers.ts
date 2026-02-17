@@ -1,6 +1,6 @@
 import { computed, WritableSignal } from '@angular/core';
 import { BrnTimeValue } from '@spartan-ng/brain/time-input';
-import { RFilterField } from './builders';
+import { CastRFilterField, RFilterField } from './builders';
 import { IOperator } from './operators';
 import { FieldTypes, IFieldType } from './types';
 
@@ -29,10 +29,12 @@ function baseHandlers<T, K extends IFieldType>(
 			? typeGuard
 			: throwHandlerException(`Field type mismatch. Expected ${typeGuard}, got ${_seed.__type}`);
 
+	const readonlyModel = computed(() => state()[fieldId] as CastRFilterField<K>);
+
 	const formId = computed(() => `${type}-${fieldId}` as const);
-	const controlValue = computed<T>(() => state()[fieldId].value as T);
-	const controlLabel = computed(() => state()[fieldId].__label ?? fieldId);
-	const operatorValue = computed(() => state()[fieldId].operator);
+	const controlValue = computed<T>(() => readonlyModel().value as T);
+	const controlLabel = computed(() => readonlyModel().__label ?? fieldId);
+	const operatorValue = computed(() => readonlyModel().operator);
 
 	function updateControl<T>(value: T) {
 		state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], value } } as typeof v) : v));
@@ -55,13 +57,24 @@ function baseHandlers<T, K extends IFieldType>(
 		state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], operator: update } } as typeof v) : v));
 	};
 
-	return { formId, controlValue, controlLabel, operatorValue, closeField, setOperator, updateControl, type };
+	return {
+		readonlyModel,
+		formId,
+		controlValue,
+		controlLabel,
+		operatorValue,
+		closeField,
+		setOperator,
+		updateControl,
+		type,
+	};
 }
 
 export function booleanFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
 	const {
 		operatorValue: _,
 		setOperator: __,
+		readonlyModel: ___,
 		...rest
 	} = baseHandlers(fieldId, state, FieldTypes.boolean, vGuard<boolean>);
 
@@ -71,41 +84,39 @@ export function booleanFieldHandlers(fieldId: string, state: WritableSignal<Reco
 }
 
 export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.text, vGuard<string>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.text, vGuard<string>);
 
 	const fieldRequired = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.text ? (v.__required ?? false) : false;
+		const v = readonlyModel();
+		return v.__required ?? false;
 	});
 
 	return {
 		...base,
-		type: FieldTypes.text,
 		fieldRequired,
 	};
 }
 
 export function numberFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.number, vGuard<number>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.number, vGuard<number>);
 
 	const min = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.number ? (v.__min ?? Number.MIN_SAFE_INTEGER) : null;
+		const v = readonlyModel();
+		return v.__min ?? Number.MIN_SAFE_INTEGER;
 	});
 
 	const max = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.number ? (v.__max ?? Number.MAX_SAFE_INTEGER) : null;
+		const v = readonlyModel();
+		return v.__max ?? Number.MAX_SAFE_INTEGER;
 	});
 
 	const step = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.number ? (v.__step ?? 1) : null;
+		const v = readonlyModel();
+		return v.__step ?? 1;
 	});
 
 	return {
 		...base,
-		type: FieldTypes.number,
 		min,
 		max,
 		step,
@@ -113,43 +124,42 @@ export function numberFieldHandlers(fieldId: string, state: WritableSignal<Recor
 }
 
 export function dateFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.date, vGuard<Date>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.date, vGuard<Date>);
 
 	const min = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.date && v.__min ? v.__min : null;
+		const v = readonlyModel();
+		return v.__min ?? null;
 	});
 
 	const max = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.date && v.__max ? v.__max : null;
+		const v = readonlyModel();
+		return v.__max ?? null;
 	});
 
 	return {
 		...base,
-		type: FieldTypes.date,
 		min,
 		max,
 	};
 }
 
 export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const seed = state()[fieldId];
-	const base = baseHandlers(fieldId, state, FieldTypes.time, vGuard<Date>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.time, vGuard<Date>);
+	const seed = readonlyModel();
 
 	const min = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.time && v.__min ? v.__min : null;
+		const v = readonlyModel();
+		return v.__min ?? null;
 	});
 
 	const max = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.time && v.__max ? v.__max : null;
+		const v = readonlyModel();
+		return v.__max ?? null;
 	});
 
 	// state understands Date, filter talks in { hours: number; minutes: number; seconds: number; period: 'AM' | 'PM' }
 	const updateTimeControl = (value: BrnTimeValue) => {
-		const d = new Date(state()[fieldId].value as Date);
+		const d = new Date(seed.value);
 		let hours = value.hours % 12;
 		if (value.period === 'PM') hours += 12;
 		d.setHours(hours, value.minutes, value.seconds, 0);
@@ -158,7 +168,7 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 
 	// state understands Date, filter talks in { hours: number; minutes: number; seconds: number; period: 'AM' | 'PM' }
 	const timeControlValue = computed(() => {
-		const v = (state()[fieldId].value ?? seed.value) as Date;
+		const v = (readonlyModel().value ?? seed.value);
 		const hours = v.getHours();
 		const minutes = v.getMinutes();
 		const seconds = v.getSeconds();
@@ -168,7 +178,6 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 
 	return {
 		...base,
-		type: FieldTypes.time,
 		min,
 		max,
 		updateControl: updateTimeControl,
@@ -177,7 +186,7 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 }
 
 export function selectFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.select, vGuard<unknown | unknown[]>);
+	const {readonlyModel, ...base} = baseHandlers(fieldId, state, FieldTypes.select, vGuard<unknown | unknown[]>);
 
 	const updateSelectControl = (value: unknown | unknown[]) => {
 		const update = Array.isArray(value) ? value.at(0) : value;
@@ -185,25 +194,17 @@ export function selectFieldHandlers(fieldId: string, state: WritableSignal<Recor
 	};
 
 	const options = computed(() => {
-		const v = state()[fieldId];
-		if (v.__type === FieldTypes.select && v.__options) {
-			return v.__options;
-		} else return [];
+		const v = readonlyModel()
+		return v.__options;
 	});
 
 	const selectedOptionLabel = computed(() => {
-		const v = state()[fieldId];
-
-		if (v.__type !== FieldTypes.select) {
-			return '';
-		}
-
+		const v = readonlyModel();
 		return v.__itemToString(base.controlValue());
 	});
 
 	return {
 		...base,
-		type: FieldTypes.select,
 		updateControl: updateSelectControl,
 		selectedOptionLabel,
 		options,
@@ -211,97 +212,90 @@ export function selectFieldHandlers(fieldId: string, state: WritableSignal<Recor
 }
 
 export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.range, vGuard<[number, number]>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.range, vGuard<[number, number]>);
 
 	const min = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.range ? v.__min : null;
+		const v = readonlyModel()
+		return v.__min ?? null;
 	});
 
 	const max = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.range ? v.__max : null;
+		const v = readonlyModel()
+		return v.__max ?? null;
 	});
 
 	return {
 		...base,
-		type: FieldTypes.range,
 		min,
 		max,
 	};
 }
 
 export function dateRangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.daterange, vGuard<[Date, Date]>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.daterange, vGuard<[Date, Date]>);
 
 	const min = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.daterange ? v.__min : null;
+		const v = readonlyModel()
+		return v.__min ?? null;
 	});
 
 	const max = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.daterange ? v.__max : null;
+		const v = readonlyModel()
+		return v.__max ?? null;
 	});
 
 	return {
 		...base,
-		type: FieldTypes.daterange,
 		min,
 		max,
 	};
 }
 
 export function comboboxFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const base = baseHandlers(fieldId, state, FieldTypes.combobox, vGuard<unknown>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.combobox, vGuard<unknown>);
 
 	const options = computed(() => {
-		const v = state()[fieldId];
-		if (v.__type === FieldTypes.combobox && v.__options) {
-			return v.__options;
-		} else return [];
+		const v = readonlyModel();
+		return v.__options ?? [];
 	});
 
 	const placeholder = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.combobox && v.__placeholder ? v.__placeholder : '';
+		const v = readonlyModel()
+		return v.__placeholder ?? '';
 	});
 
 	return {
 		...base,
 		options,
 		placeholder,
-		type: FieldTypes.combobox,
 	};
 }
 
 export function asyncComboFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const __seed = state()[fieldId];
-	const base = baseHandlers(fieldId, state, FieldTypes.asyncCombobox, vGuard<unknown>);
+
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.asyncCombobox, vGuard<unknown>);
 
 	const placeholder = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.asyncCombobox && v.__placeholder ? v.__placeholder : '';
+		const v = readonlyModel()
+		return v.__placeholder ?? '';
 	});
 
 	const itemToString = computed(() => {
-		const v = state()[fieldId];
-		return v.__type === FieldTypes.asyncCombobox && v.__itemToString
-			? v.__itemToString
-			: (item: unknown) => String(item);
+		const v = readonlyModel()
+		return  v.__itemToString ?? ((item: unknown) => String(item));
 	});
 
 	const fieldResourceRequest = computed(() => {
-		const v = state()[fieldId];
+		const v = readonlyModel()
 		return (
-			(v.__type === FieldTypes.asyncCombobox && v.__resourceRequest) ||
+			(v.__resourceRequest) ||
 			throwHandlerException('Resource request is required for async combobox field')
 		);
 	});
 
 	const fieldResourceOptions =
-		(__seed.__type === FieldTypes.asyncCombobox && __seed.__resourceOptions) ||
-		throwHandlerException('Resource options is required for async combobox field');
+		(readonlyModel().__resourceOptions) ||
+		throwHandlerException('Resource options are required for async combobox field');
 
 	return {
 		...base,
@@ -309,7 +303,6 @@ export function asyncComboFieldHandlers(fieldId: string, state: WritableSignal<R
 		itemToString,
 		fieldResourceRequest,
 		fieldResourceOptions,
-		type: FieldTypes.asyncCombobox,
 	};
 }
 

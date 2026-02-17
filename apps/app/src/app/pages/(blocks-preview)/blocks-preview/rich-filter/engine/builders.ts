@@ -250,7 +250,13 @@ export const fieldBuilder = {
 
 export type RFilterField = ReturnType<(typeof fieldBuilder)[IFieldType]>;
 
-export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): FilterModelRef<T[number]['id'], T[number]> {
+/**
+ * helper type to cast one field into a specific type (runtime checks still needed)
+ */
+export type CastRFilterField<T extends IFieldType> = ReturnType<(typeof fieldBuilder)[T]>;
+
+export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
+
 	const _base = fields.reduce(
 		(acc, field, i) => {
 			field.__index = i;
@@ -306,34 +312,6 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 		}));
 	};
 
-	// ==== field removal =====
-	// const removeField = (fieldId: T[number]['id']) => {
-	// 	_v.update((s) => {
-	// 		const { [fieldId]: _, ...rest } = s;
-	// 		return rest as typeof s;
-	// 	});
-	// };
-
-	const cleanField = (fieldId: T[number]['id']) => {
-		_v.update((s) => ({
-			...s,
-			[fieldId]: {
-				...s[fieldId],
-				// Date can never be null or the calendar component will break
-				value: s[fieldId].__type === FieldTypes.date ? new Date() : null,
-				operator: null,
-				__visible: false,
-			},
-		}));
-	};
-
-	// ==== field addition =====
-	// const addField = (fieldId: T[number]['id']) => {
-	// 	_v.update((s) => ({
-	// 		...s,
-	// 		[fieldId]: _base[fieldId as T[number]['id']],
-	// 	}));
-	// };
 
 	const addField = (fieldId: T[number]['id']) => {
 		const fieldToAdd = _base[fieldId as T[number]['id']];
@@ -359,160 +337,15 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]): F
 		});
 	};
 
-	const fieldValue = <V extends T[number]['value']>(fieldId: T[number]['id']): V => {
-		const field = _v()[fieldId];
-		return field.value as V;
-	};
-
-	const fieldOperator = (fieldId: T[number]['id']): T[number]['operator'] => {
-		const field = _v()[fieldId];
-		return field.operator;
-	};
-
-	const fieldOptions = (fieldId: T[number]['id']): T[number] extends { __options: infer O } ? O : never => {
-		const field = _v()[fieldId] as T[number] & { __options?: unknown };
-		if (!field.__options) {
-			throw new Error(`Field with id ${fieldId} does not have options`);
-		}
-		return field.__options as T[number] extends { __options: infer O } ? O : never;
-	};
-
-	const fieldNumericOptions = (
-		fieldId: T[number]['id'],
-	): { min: number | null; max: number | null; step: number | null } => {
-		const field = _v()[fieldId] as T[number] & { __min?: unknown; __max?: unknown; __step?: unknown };
-		if (field.__type !== FieldTypes.number) {
-			return { min: null, max: null, step: null };
-		} else {
-			return {
-				min: field.__min ?? null,
-				max: field.__max ?? null,
-				step: field.__step ?? null,
-			};
-		}
-	};
-
-	const fieldMinMax = <K extends IFieldType = IFieldType, MinMax = unknown>(
-		fieldId: T[number]['id'],
-	): MinMax extends { __type: K; __min: infer Min; __max: infer Max }
-		? { min: Min; max: Max }
-		: { min: null; max: null } => {
-		const field = _v()[fieldId] as T[number] & { __min?: unknown; __max?: unknown };
-		if (!('__min' in field) || !('__max' in field)) {
-			return { min: null, max: null } as MinMax extends { __type: K; __min: infer Min; __max: infer Max }
-				? { min: Min; max: Max }
-				: { min: null; max: null };
-		}
-		return {
-			min: field.__min,
-			max: field.__max,
-		} as MinMax extends { __type: K; __min: infer Min; __max: infer Max }
-			? { min: Min; max: Max }
-			: { min: null; max: null };
-	};
-
-	const fieldRequired = (fieldId: T[number]['id']): boolean => {
-		const field = _v()[fieldId];
-		// add other types as needed, for now only text fields can be required
-		return field.__type === FieldTypes.text ? !!field.__required : false;
-	};
-
-	const fieldPlaceholder = <K = string>(fieldId: T[number]['id']): K => {
-		const field = _v()[fieldId];
-		if ('__placeholder' in field) {
-			return field.__placeholder as K;
-		} else {
-			return _base[fieldId].value as K;
-		}
-	};
-
-	const fieldItemToString = <I = unknown>(fieldId: T[number]['id']): ((item: I) => string) => {
-		const field = _v()[fieldId] as T[number] & { __itemToString?: (item: I) => string };
-		return field.__itemToString ?? ((item: I) => String(item ?? ''));
-	};
-
-	const fieldResourceOptions = <R = unknown, K = unknown>(
-		fieldId: T[number]['id']): HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>> => {
-		const field = _v()[fieldId]
-		if (field.__type !== FieldTypes.asyncCombobox) {
-			throw new Error(`Field with id ${fieldId} is not an async combobox field`);
-		}
-		if (!field.__resourceOptions) {
-			throw new Error(`Field with id ${fieldId} does not have resource options`);
-		}
-		return field.__resourceOptions as HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>>;
-	}
-
-	const fieldResourceRequest = (fieldId: T[number]['id']): HttpResourceRequest | Signal<HttpResourceRequest> => {
-		const field = _v()[fieldId]
-		if (field.__type !== FieldTypes.asyncCombobox) {
-			throw new Error(`Field with id ${fieldId} is not an async combobox field`);
-		}
-		if (!field.__resourceRequest) {
-			throw new Error(`Field with id ${fieldId} does not have a resource request`);
-		}
-		return field.__resourceRequest as HttpResourceRequest | Signal<HttpResourceRequest>;
-	};
-
-	const fieldLabel = (fieldId: T[number]['id']): string => {
-		const field = _v()[fieldId];
-		return field.__label ?? field.id;
-	};
-
 	return {
 		value: _v,
 		reset,
-		patchFieldOperator: patchOperator,
-		patchFieldValue: patchValue,
-		// use this function to "remove" a field. the model cannot have dynamic fields, so we set the value and operator to null instead
-		cleanField,
 		// addfield is used to add back a "removed" field by resetting its value and operator to the initial state defined in _base
-		addField,
 		fieldsArray,
 		availableFields,
+		addField,
 		clear,
-		fieldValue,
-		fieldOperator,
-		fieldOptions,
-		fieldNumericOptions,
-		fieldMinMax,
-		fieldRequired,
-		fieldPlaceholder,
-		fieldItemToString,
-		fieldResourceOptions,
-		fieldResourceRequest,
-		fieldLabel,
-	} satisfies FilterModelRef<T[number]['id'], T[number]>;
+	}
 }
 
-// Base interface for component inputs - uses 'never' in contravariant positions to accept any specific implementation
-export interface FilterModelRef<TId extends string = string, TFields extends RFilterField = RFilterField> {
-	readonly value: WritableSignal<Record<string, TFields>>;
-	reset(): void;
-	patchFieldOperator(fieldId: TId, operator: IOperator): void;
-	patchFieldValue(fieldId: TId, value: TFields['value']): void;
-	cleanField(fieldId: TId): void;
-	addField(fieldId: TId): void;
-	fieldsArray: Signal<TFields[]>;
-	availableFields: Signal<TFields[]>;
-	clear(): void;
-	fieldValue<V extends TFields['value']>(fieldId: TId): V;
-	fieldOperator(fieldId: TId): TFields['operator'];
-	fieldOptions(fieldId: TId): TFields extends { __options: infer O } ? O : never;
-	fieldNumericOptions(fieldId: TId): { min: number | null; max: number | null; step: number | null };
-	fieldMinMax<K extends IFieldType = IFieldType, MinMax = unknown>(
-		fieldId: TId,
-	): MinMax extends { __type: K; __min: infer Min; __max: infer Max }
-		? { min: Min; max: Max }
-		: { min: null; max: null };
-	fieldRequired(fieldId: TId): boolean;
-	fieldPlaceholder<K = string>(fieldId: TId): K;
-	fieldItemToString<I = unknown>(fieldId: TId): (item: I) => string;
-	fieldResourceOptions<R = unknown[], K = unknown>(fieldId: TId): HttpResourceOptions<R, K> | Signal<HttpResourceOptions<R, K>>;
-  fieldResourceRequest(fieldId: TId): HttpResourceRequest | Signal<HttpResourceRequest>;
-	fieldLabel(fieldId: TId): string;
-}
-
-// Infer exact type from a specific buildFilterModel call
-export type InferFilterModel<T> =
-	T extends FilterModelRef<infer TId, infer TFields> ? FilterModelRef<TId, TFields> : never;
+export type FilterModelRef = ReturnType<typeof buildFilterModel>;

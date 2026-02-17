@@ -11,7 +11,7 @@ import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
 import { FHandler } from '../engine/handlers';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
 
 @Component({
@@ -57,7 +57,7 @@ import { FieldTypes } from '../engine/types';
 	`,
 })
 export class TimeField {
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.time>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.time>;
 
 	readonly operators = TimeOperators;
 

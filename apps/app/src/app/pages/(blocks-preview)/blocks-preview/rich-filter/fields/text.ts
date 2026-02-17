@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { FilterModelRef } from '../engine/builders';
+
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
@@ -14,7 +14,7 @@ import { FieldOperator } from './utils/field-operator';
 import { FormsModule } from '@angular/forms';
 import { FieldTypes } from '../engine/types';
 import { FHandler } from '../engine/handlers';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -59,7 +59,7 @@ import { FilterHandlerToken } from '../engine/token';
 })
 export class TextField {
 
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.text>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.text>;
 
 
 	readonly operators = TextOperators;

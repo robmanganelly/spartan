@@ -9,7 +9,7 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { FHandler } from '../engine/handlers';
 import { EqualityOperators } from '../engine/operators';
-import { FilterHandlerToken } from '../engine/token';
+import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
@@ -64,7 +64,7 @@ import { FieldOperator } from './utils/field-operator';
 	`,
 })
 export class NumberField {
-	protected readonly service = inject(FilterHandlerToken) as FHandler<typeof FieldTypes.number>;
+	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.number>;
 
 	readonly operators = EqualityOperators;
 }

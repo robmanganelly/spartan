@@ -1,4 +1,4 @@
 import { InjectionToken } from "@angular/core";
 import {  TFieldHandlers } from "./handlers";
 
-export const FilterHandlerToken = new InjectionToken<TFieldHandlers>('FilterHandlerToken');
+export const FILTER_HANDLER = new InjectionToken<TFieldHandlers>('FilterHandlerToken');
