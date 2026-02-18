@@ -161,7 +161,7 @@ export class SpartanRichFilter {
 	});
 
 	readonly onFallbackFocusRequested = afterRenderEffect(() => {
-		const trigger = this.state().focusedField() === FOCUS_FALLBACK;
+		const trigger = this.state().focusedField()?.startsWith(FOCUS_FALLBACK);
 		const el = this.monitoredInput();
 
 		if (trigger && el) {

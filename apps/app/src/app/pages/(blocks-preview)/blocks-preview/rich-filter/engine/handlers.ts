@@ -26,7 +26,7 @@ function baseHandlers<T, K extends IFieldType>(
 	state: WritableSignal<Record<string, RFilterField>>,
 	globalState: HandlerGlobalState,
 	typeGuard: K,
-	valueGuard: () => T,
+	_valueGuard: () => T,
 ) {
 	const current = state()[fieldId];
 
@@ -52,7 +52,7 @@ function baseHandlers<T, K extends IFieldType>(
 			const { [fieldId]: _, ...rest } = v;
 			return { ...rest, [fieldId]: { ...current, __visible: false } } as typeof v;
 		});
-		globalState.focusedField.set(FOCUS_FALLBACK);
+		globalState.focusedField.set(`${FOCUS_FALLBACK}-${fieldId}`);
 	};
 
 	const setOperator = (operator: IOperator | IOperator[] | undefined) => {
