@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, isSignal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, isSignal, signal, viewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
@@ -10,7 +10,7 @@ import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { debounceTime } from 'rxjs';
-import { QueryToken } from '../engine/constants';
+import { FAKE_FOCUS_ORIGIN, QueryToken } from '../engine/constants';
 import { FHandler } from '../engine/handlers';
 import { IdentityOperators } from '../engine/operators';
 import { FILTER_HANDLER } from '../engine/token';
@@ -18,6 +18,8 @@ import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FocusElementOptions } from './utils/focus-element';
+import { FocusMonitor } from '@angular/cdk/a11y';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-async-field',
@@ -57,7 +59,7 @@ import { FieldOperator } from './utils/field-operator';
 				(ngModelChange)="service.updateControl($event)"
 				[itemToString]="service.itemToString()"
 			>
-				<hlm-combobox-input [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
+				<hlm-combobox-input #monitoredInput [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					@if (showStatus()) {
 						<hlm-combobox-status>
@@ -91,7 +93,7 @@ import { FieldOperator } from './utils/field-operator';
 		</div>
 	`,
 })
-export class ComboAsyncField {
+export class ComboAsyncField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.asyncCombobox>;
 
 	protected readonly operators = IdentityOperators;
@@ -114,13 +116,18 @@ export class ComboAsyncField {
 	private readonly safeValue = computed(() => (this._resource.hasValue() ? this._resource.value() : []));
 
 	protected readonly showStatus = computed(
-		() =>	(this._resource.error() || this._resource.isLoading() || !this._query().length || !this.safeValue().length),
+		() => this._resource.error() || this._resource.isLoading() || !this._query().length || !this.safeValue().length,
 	);
 
 	protected readonly parsedItems = computed(() => {
-
 		const fn = this.service.itemToString();
 		return this.safeValue().map((v) => ({ raw: v, label: fn(v) }));
+	});
 
+	readonly focusMonitor = inject(FocusMonitor);
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
 	});
 }

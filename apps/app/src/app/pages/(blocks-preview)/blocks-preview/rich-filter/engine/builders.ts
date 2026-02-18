@@ -3,6 +3,7 @@ import { IEqualityOperator, IIdentityOperator, IOperator, ITextOperator, ITimeOp
 import { FieldTypes, IFieldType } from './types';
 import { HttpResourceOptions, HttpResourceRequest } from '@angular/common/http';
 import { RangeValue } from '@spartan-ng/brain/range-slider';
+import { FOCUS_FALLBACK } from './constants';
 
 export const buildTextField = (
 	id: string,
@@ -267,6 +268,9 @@ export type CastRFilterField<T extends IFieldType> = ReturnType<(typeof fieldBui
 
 export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
 
+	const focusedField = signal<string | null>(null);
+
+
 	const _base = fields.reduce(
 		(acc, field, i) => {
 			field.__index = i;
@@ -303,30 +307,6 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
 
 	// ===== single field update =====
 
-	const patchOperator = (fieldId: T[number]['id'], operator: IOperator) => {
-		const field = _v()[fieldId];
-		if (!field) return;
-		_v.update((s) => ({
-			...s,
-			[fieldId]: {
-				...field,
-				operator,
-			},
-		}));
-	};
-
-	const patchValue = (fieldId: T[number]['id'], value: T[number]['value']) => {
-		const field = _v()[fieldId];
-		if (!field) return;
-		_v.update((s) => ({
-			...s,
-			[fieldId]: {
-				...field,
-				value,
-			},
-		}));
-	};
-
 
 	const addField = (fieldId: T[number]['id']) => {
 		const fieldToAdd = _base[fieldId as T[number]['id']];
@@ -336,6 +316,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
 			...s,
 			[fieldId]: { ...fieldToAdd, __index: _baseIndex(), __visible: true },
 		}));
+		focusedField.set(fieldId);
 	};
 
 	const clear = () => {
@@ -350,6 +331,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
 			}
 			return next;
 		});
+		focusedField.set(FOCUS_FALLBACK);
 	};
 
 	return {
@@ -360,6 +342,7 @@ export function buildFilterModel<T extends RFilterField[]>(...fields: [...T]){
 		availableFields,
 		addField,
 		clear,
+		focusedField,
 	}
 }
 

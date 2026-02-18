@@ -113,6 +113,10 @@ interface User {
 			<div class="w-full max-w-6xl">
 				<spartan-rich-filter [state]="filterState" />
 				<div class="mt-10">
+					<div>Who's focused at start</div>
+					<pre>{{ filterState.focusedField()  }}</pre>
+				</div>
+				<div class="mt-10">
 					<div>Parsed Value</div>
 					<pre>{{ payload() | json }}</pre>
 				</div>

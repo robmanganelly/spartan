@@ -1,15 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, Inject, inject, input } from '@angular/core';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
+import { FHandler } from '../engine/handlers';
+import { FILTER_HANDLER } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
-import { FHandler, FIELD_HANDLERS_MAP } from '../engine/handlers';
-import { FieldTypes } from '../engine/types';
-import { FILTER_HANDLER } from '../engine/token';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-boolean-field',
@@ -38,15 +41,26 @@ import { FILTER_HANDLER } from '../engine/token';
 			<div hlmButtonGroupSeparator></div>
 
 			<div hlmButtonGroupText class="dark:bg-input/30 bg-transparent">
-				<hlm-checkbox [id]="service.formId()" [checked]="service.controlValue()" (checkedChange)="service.updateControl($event)" />
+				<hlm-checkbox
+					#monitoredInput
+					[id]="service.formId()"
+					[checked]="service.controlValue()"
+					(checkedChange)="service.updateControl($event)"
+				/>
 			</div>
 			<!-- close button -->
-			<spartan-rich-filter-field-close (onCloseField)="service.closeField()" ></spartan-rich-filter-field-close>
+			<spartan-rich-filter-field-close (onCloseField)="service.closeField()"></spartan-rich-filter-field-close>
 		</div>
 	`,
 })
-export class BooleanField {
-
+export class BooleanField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.boolean>;
 
+	readonly focusMonitor = inject(FocusMonitor);
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+
+	readonly onFocusElement = effect(()=>{
+		console.log(this.monitoredInput())
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	})
 }

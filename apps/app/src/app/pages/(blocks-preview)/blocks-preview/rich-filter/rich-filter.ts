@@ -1,24 +1,28 @@
+import { FocusMonitor } from '@angular/cdk/a11y';
 import { NgComponentOutlet } from '@angular/common';
 import {
+	afterRenderEffect,
 	ChangeDetectionStrategy,
 	Component,
 	DestroyableInjector,
 	DestroyRef,
 	effect,
+	ElementRef,
 	inject,
 	Injector,
 	linkedSignal,
 	model,
 	Signal,
 	Type,
-	WritableSignal,
+	viewChild,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFunnel, lucideFunnelPlus, lucideFunnelX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
-import { FilterModelRef, RFilterField } from './engine/builders';
+import { FilterModelRef } from './engine/builders';
+import { FOCUS_FALLBACK } from './engine/constants';
 import { FIELD_HANDLERS_MAP } from './engine/handlers';
 import { FILTER_HANDLER } from './engine/token';
 import { FieldTypes, IFieldType } from './engine/types';
@@ -64,7 +68,7 @@ const FIELD_COMPONENT_MAP: Record<IFieldType, Type<unknown>> = {
 				}
 				<!-- button comes after -->
 				@if (remaining.length) {
-					<button size="icon" hlmBtn [hlmDropdownMenuTrigger]="addFilterMenu" align="start">
+					<button #focusFallback size="icon" hlmBtn [hlmDropdownMenuTrigger]="addFilterMenu" align="start">
 						<ng-icon size="sm" hlm [name]="active.length ? 'lucideFunnelPlus' : 'lucideFunnel'" />
 					</button>
 					<ng-template #addFilterMenu>
@@ -114,7 +118,7 @@ export class SpartanRichFilter {
 				providers: [
 					{
 						provide: FILTER_HANDLER,
-						useFactory: () => FIELD_HANDLERS_MAP[fType](fId, state().value),
+						useFactory: () => FIELD_HANDLERS_MAP[fType](fId, state().value, { focusedField: state().focusedField }),
 					},
 				],
 			});
@@ -140,6 +144,9 @@ export class SpartanRichFilter {
 			});
 	});
 
+	readonly focusMonitor = inject(FocusMonitor);
+	readonly monitoredInput = viewChild('focusFallback', { read: ElementRef<HTMLElement> });
+
 	/**
 	 * In some advanced use cases, the user might want to change the model (the reference) from outside of this component, (e.g. populating the model with asynchronous options, or router data).
 	 * In that case, the view and injectors will be reset to avoid staleness.
@@ -148,8 +155,17 @@ export class SpartanRichFilter {
 	 * The user must account for this fact in their implementation
 	 *
 	 */
-	onStateChange = effect(() => {
+	readonly onStateChange = effect(() => {
 		this.state() && this.fields.set([]);
 		this.injectorCleanup();
+	});
+
+	readonly onFallbackFocusRequested = afterRenderEffect(() => {
+		const trigger = this.state().focusedField() === FOCUS_FALLBACK;
+		const el = this.monitoredInput();
+
+		if (trigger && el) {
+			this.focusMonitor.focusVia(el, 'mouse');
+		}
 	});
 }

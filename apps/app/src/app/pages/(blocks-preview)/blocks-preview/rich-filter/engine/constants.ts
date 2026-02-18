@@ -1,3 +1,4 @@
+import { FocusOrigin } from "@angular/cdk/a11y";
 
 /**
  * This constant is used to replace with the query signal
@@ -23,3 +24,10 @@
  * with the value "HTTP_RESOURCE_QUERY_TOKEN"
  */
 export const QueryToken = 'HTTP_RESOURCE_QUERY_TOKEN';
+
+/**
+ * This constant is used as a fallback focus target when removing fields
+ */
+export const FOCUS_FALLBACK = 'FOCUS_FALLBACK';
+
+export const FAKE_FOCUS_ORIGIN = 'mouse' satisfies FocusOrigin;

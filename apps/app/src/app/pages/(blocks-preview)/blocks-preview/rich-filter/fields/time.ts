@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -13,6 +13,9 @@ import { FieldOperator } from './utils/field-operator';
 import { FHandler } from '../engine/handlers';
 import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-time-field',
@@ -45,6 +48,7 @@ import { FieldTypes } from '../engine/types';
 
 			<!-- time input -->
 			<hlm-time-input
+				#monitoredInput
 				[displaySeconds]="true"
 				class="dark:bg-input/30 rounded-none border-l-0 bg-transparent shadow-none"
 				[value]="service.controlValue()"
@@ -56,9 +60,16 @@ import { FieldTypes } from '../engine/types';
 		</div>
 	`,
 })
-export class TimeField {
+export class TimeField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.time>;
+
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 
 	readonly operators = TimeOperators;
 
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

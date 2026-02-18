@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -15,6 +15,9 @@ import { FieldOperator } from './utils/field-operator';
 import { FieldTypes } from '../engine/types';
 import { FHandler } from '../engine/handlers';
 import { FILTER_HANDLER } from '../engine/token';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-range-field',
@@ -55,6 +58,7 @@ import { FILTER_HANDLER } from '../engine/token';
 				<hlm-popover-content class="rounded-xl p-0 text-sm" *hlmPopoverPortal="let ctx">
 					<div class="p-4 text-sm">
 						<hlm-range-slider
+							#monitoredInput
 							[min]="service.min()"
 							[max]="service.max()"
 							[value]="service.controlValue()"
@@ -69,13 +73,21 @@ import { FILTER_HANDLER } from '../engine/token';
 		</hlm-popover>
 	`,
 })
-export class RangeField {
+export class RangeField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.range>;
-
-	readonly operators = RangeOperators;
 
 	protected readonly _displayRange = computed(() => {
 		const [low, high] = this.service.controlValue();
 		return `${low >= 0 ? low : `(${low})`} - ${high >= 0 ? high : `(${high})`}`;
+	});
+
+	readonly operators = RangeOperators;
+
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
 	});
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -15,6 +15,9 @@ import { FormsModule } from '@angular/forms';
 import { FieldTypes } from '../engine/types';
 import { FHandler } from '../engine/handlers';
 import { FILTER_HANDLER } from '../engine/token';
+import { FocusElementOptions } from './utils/focus-element';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-text-field',
@@ -41,10 +44,15 @@ import { FILTER_HANDLER } from '../engine/token';
 			<!-- label -->
 			<spartan-rich-filter-field-label [label]="service.controlLabel()" [for]="service.formId()" />
 			<!-- operator dropdown -->
-			<spartan-rich-filter-field-operator [operatorValue]="service.operatorValue()" (operatorValueChange)="service.setOperator($event)" [operators]="operators" />
+			<spartan-rich-filter-field-operator
+				[operatorValue]="service.operatorValue()"
+				(operatorValueChange)="service.setOperator($event)"
+				[operators]="operators"
+			/>
 
 			<!-- text input -->
 			<input
+				#monitoredInput
 				class="w-40"
 				hlmInput
 				[id]="service.formId()"
@@ -57,11 +65,16 @@ import { FILTER_HANDLER } from '../engine/token';
 		</div>
 	`,
 })
-export class TextField {
-
+export class TextField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.text>;
 
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 
 	readonly operators = TextOperators;
 
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

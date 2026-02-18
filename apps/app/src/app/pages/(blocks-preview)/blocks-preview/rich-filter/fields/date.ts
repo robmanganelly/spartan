@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -15,6 +15,9 @@ import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-date-field',
@@ -51,7 +54,7 @@ import { FieldOperator } from './utils/field-operator';
 				/>
 
 				<!-- popover with calendar -->
-				<button hlmPopoverTrigger hlmBtn variant="outline" #dateTrigger>
+				<button #monitoredInput hlmPopoverTrigger hlmBtn variant="outline" #dateTrigger>
 					<ng-icon hlm name="lucideCalendar" size="sm" />
 					{{ value | date: 'mediumDate' }}
 				</button>
@@ -70,15 +73,18 @@ import { FieldOperator } from './utils/field-operator';
 		</hlm-popover>
 	`,
 })
-export class DateField {
+export class DateField implements FocusElementOptions {
 	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
 
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.date>;
 
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+
 	readonly operators = TimeOperators;
 
 	updateControlValue(value: Date | null) {
-
 		if (!value) return; // datepicker can return null, but null makes no sense in the context of the filter
 
 		this.service.updateControl(value);
@@ -86,4 +92,7 @@ export class DateField {
 			this.popoverBtn()?.nativeElement.click();
 		});
 	}
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

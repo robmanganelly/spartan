@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 
 import { lucideCalendar, lucideX } from '@ng-icons/lucide';
@@ -7,7 +7,7 @@ import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmCalendarImports } from '@spartan-ng/helm/calendar';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
-import { HlmPopoverImports, HlmPopoverTrigger } from '@spartan-ng/helm/popover';
+import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { RangeOperators } from '../engine/operators';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
@@ -16,6 +16,9 @@ import { DatePipe } from '@angular/common';
 import { FHandler } from '../engine/handlers';
 import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-daterange-field',
@@ -51,7 +54,7 @@ import { FieldTypes } from '../engine/types';
 				/>
 
 				<!-- popover with range calendar -->
-				<button hlmPopoverTrigger hlmBtn variant="outline" #dateRangeTrigger>
+				<button #monitoredInput hlmPopoverTrigger hlmBtn variant="outline" #dateRangeTrigger>
 					<ng-icon hlm name="lucideCalendar" size="sm" />
 					{{ startDate() | date: 'MMM d' }} - {{ endDate() | date: 'MMM d' }}
 				</button>
@@ -72,8 +75,7 @@ import { FieldTypes } from '../engine/types';
 		</hlm-popover>
 	`,
 })
-export class DateRangeField {
-
+export class DateRangeField implements FocusElementOptions {
 	private readonly popoverBtn = viewChild<ElementRef<HTMLButtonElement>>('dateRangeTrigger');
 	private readonly tempStart = signal<Date | null>(null);
 
@@ -82,7 +84,6 @@ export class DateRangeField {
 
 	readonly startDate = computed(() => this.service.controlValue()[0]);
 	readonly endDate = computed(() => this.service.controlValue()[1]);
-
 
 	// update start date should not trigger a change in the model
 	// until both start and end date are selected,
@@ -96,7 +97,7 @@ export class DateRangeField {
 			return;
 		}
 
-		this.service.updateControl([start,date]);
+		this.service.updateControl([start, date]);
 		this.tempStart.set(null);
 
 		// close popover after selecting range;
@@ -106,4 +107,12 @@ export class DateRangeField {
 		});
 		// TODO: Does BrainPopoverTrigger expose a method to close the popover programmatically?
 	}
+
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

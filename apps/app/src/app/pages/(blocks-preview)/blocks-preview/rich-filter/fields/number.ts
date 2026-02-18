@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -14,6 +14,9 @@ import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-number-field',
@@ -48,6 +51,7 @@ import { FieldOperator } from './utils/field-operator';
 
 			<!-- numeric input -->
 			<input
+				#monitoredInput
 				class="w-28"
 				hlmInput
 				[id]="service.formId()"
@@ -63,8 +67,14 @@ import { FieldOperator } from './utils/field-operator';
 		</div>
 	`,
 })
-export class NumberField {
+export class NumberField implements FocusElementOptions {
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.number>;
 
 	readonly operators = EqualityOperators;
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

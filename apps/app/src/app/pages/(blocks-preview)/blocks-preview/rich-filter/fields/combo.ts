@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
@@ -17,6 +17,9 @@ import { FormsModule } from '@angular/forms';
 import { FHandler } from '../engine/handlers';
 import { FILTER_HANDLER } from '../engine/token';
 import { FieldTypes } from '../engine/types';
+import { FocusMonitor } from '@angular/cdk/a11y';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-combo-field',
@@ -54,7 +57,7 @@ import { FieldTypes } from '../engine/types';
 
 			<!-- select field with options -->
 			<hlm-combobox [ngModel]="service.controlValue()" (ngModelChange)="service.updateControl($event)">
-				<hlm-combobox-input [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
+				<hlm-combobox-input #monitoredInput [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
 					<div hlmComboboxList>
@@ -70,9 +73,15 @@ import { FieldTypes } from '../engine/types';
 		</div>
 	`,
 })
-export class ComboField {
+export class ComboField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.combobox>;
 
 	readonly operators = IdentityOperators;
 
+	readonly focusMonitor = inject(FocusMonitor);
+
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

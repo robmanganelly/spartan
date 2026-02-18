@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 
+import { FocusMonitor } from '@angular/cdk/a11y';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -10,13 +11,15 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmRangeSliderImports } from '@spartan-ng/helm/range-slider';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { FHandler } from '../engine/handlers';
 import { IdentityOperators } from '../engine/operators';
+import { FILTER_HANDLER } from '../engine/token';
+import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
-import { FHandler } from '../engine/handlers';
-import { FILTER_HANDLER } from '../engine/token';
-import { FieldTypes } from '../engine/types';
+import { FocusElementOptions } from './utils/focus-element';
+import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-select-field',
@@ -57,6 +60,7 @@ import { FieldTypes } from '../engine/types';
 				placeholder="Select an option"
 				[value]="service.controlValue()"
 				(valueChange)="service.updateControl($event)"
+				#monitoredInput
 			>
 				<hlm-select-trigger>
 					<hlm-select-value>
@@ -77,9 +81,15 @@ import { FieldTypes } from '../engine/types';
 		</div>
 	`,
 })
-export class SelectField {
+export class SelectField implements FocusElementOptions {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.select>;
 
 	readonly operators = IdentityOperators;
+	readonly focusMonitor = inject(FocusMonitor);
 
+	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+
+	readonly onFocusElement = effect(() => {
+		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+	});
 }

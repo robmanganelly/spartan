@@ -3,6 +3,11 @@ import { BrnTimeValue } from '@spartan-ng/brain/time-input';
 import { CastRFilterField, RFilterField } from './builders';
 import { IOperator } from './operators';
 import { FieldTypes, IFieldType } from './types';
+import { FOCUS_FALLBACK } from './constants';
+
+type HandlerGlobalState = {
+	focusedField: WritableSignal<string | null>;
+}
 
 /**
  * helper function to create typed handlers
@@ -19,6 +24,7 @@ export function throwHandlerException(message: string): never {
 function baseHandlers<T, K extends IFieldType>(
 	fieldId: string,
 	state: WritableSignal<Record<string, RFilterField>>,
+	globalState: HandlerGlobalState,
 	typeGuard: K,
 	valueGuard: () => T,
 ) {
@@ -35,6 +41,7 @@ function baseHandlers<T, K extends IFieldType>(
 	const controlValue = computed<T>(() => readonlyModel().value as T);
 	const controlLabel = computed(() => readonlyModel().__label ?? fieldId);
 	const operatorValue = computed(() => readonlyModel().operator);
+	const isFocused = computed(() => globalState.focusedField() === fieldId);
 
 	function updateControl<T>(value: T) {
 		state.update((v) => (v[fieldId] ? ({ ...v, [fieldId]: { ...v[fieldId], value } } as typeof v) : v));
@@ -45,6 +52,7 @@ function baseHandlers<T, K extends IFieldType>(
 			const { [fieldId]: _, ...rest } = v;
 			return { ...rest, [fieldId]: { ...current, __visible: false } } as typeof v;
 		});
+		globalState.focusedField.set(FOCUS_FALLBACK);
 	};
 
 	const setOperator = (operator: IOperator | IOperator[] | undefined) => {
@@ -63,6 +71,7 @@ function baseHandlers<T, K extends IFieldType>(
 		controlValue,
 		controlLabel,
 		operatorValue,
+		isFocused,
 		closeField,
 		setOperator,
 		updateControl,
@@ -70,21 +79,21 @@ function baseHandlers<T, K extends IFieldType>(
 	};
 }
 
-export function booleanFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+export function booleanFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
 	const {
 		operatorValue: _,
 		setOperator: __,
 		readonlyModel: ___,
 		...rest
-	} = baseHandlers(fieldId, state, FieldTypes.boolean, vGuard<boolean>);
+	} = baseHandlers(fieldId, state, globalState, FieldTypes.boolean, vGuard<boolean>);
 
 	return {
 		...rest,
 	};
 }
 
-export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.text, vGuard<string>);
+export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.text, vGuard<string>);
 
 	const fieldRequired = computed(() => {
 		const v = readonlyModel();
@@ -97,8 +106,8 @@ export function textFieldHandlers(fieldId: string, state: WritableSignal<Record<
 	};
 }
 
-export function numberFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.number, vGuard<number>);
+export function numberFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.number, vGuard<number>);
 
 	const min = computed(() => {
 		const v = readonlyModel();
@@ -123,8 +132,8 @@ export function numberFieldHandlers(fieldId: string, state: WritableSignal<Recor
 	};
 }
 
-export function dateFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.date, vGuard<Date>);
+export function dateFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.date, vGuard<Date>);
 
 	const min = computed(() => {
 		const v = readonlyModel();
@@ -143,8 +152,8 @@ export function dateFieldHandlers(fieldId: string, state: WritableSignal<Record<
 	};
 }
 
-export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.time, vGuard<Date>);
+export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.time, vGuard<Date>);
 	const seed = readonlyModel();
 
 	const min = computed(() => {
@@ -185,8 +194,8 @@ export function timeFieldHandlers(fieldId: string, state: WritableSignal<Record<
 	};
 }
 
-export function selectFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const {readonlyModel, ...base} = baseHandlers(fieldId, state, FieldTypes.select, vGuard<unknown | unknown[]>);
+export function selectFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const {readonlyModel, ...base} = baseHandlers(fieldId, state, globalState, FieldTypes.select, vGuard<unknown | unknown[]>);
 
 	const updateSelectControl = (value: unknown | unknown[]) => {
 		const update = Array.isArray(value) ? value.at(0) : value;
@@ -211,8 +220,8 @@ export function selectFieldHandlers(fieldId: string, state: WritableSignal<Recor
 	};
 }
 
-export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.range, vGuard<[number, number]>);
+export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.range, vGuard<[number, number]>);
 
 	const min = computed(() => {
 		const v = readonlyModel()
@@ -231,8 +240,8 @@ export function rangeFieldHandlers(fieldId: string, state: WritableSignal<Record
 	};
 }
 
-export function dateRangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.daterange, vGuard<[Date, Date]>);
+export function dateRangeFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.daterange, vGuard<[Date, Date]>);
 
 	const min = computed(() => {
 		const v = readonlyModel()
@@ -251,8 +260,8 @@ export function dateRangeFieldHandlers(fieldId: string, state: WritableSignal<Re
 	};
 }
 
-export function comboboxFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.combobox, vGuard<unknown>);
+export function comboboxFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.combobox, vGuard<unknown>);
 
 	const options = computed(() => {
 		const v = readonlyModel();
@@ -271,9 +280,9 @@ export function comboboxFieldHandlers(fieldId: string, state: WritableSignal<Rec
 	};
 }
 
-export function asyncComboFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>) {
+export function asyncComboFieldHandlers(fieldId: string, state: WritableSignal<Record<string, RFilterField>>, globalState: HandlerGlobalState) {
 
-	const { readonlyModel, ...base } = baseHandlers(fieldId, state, FieldTypes.asyncCombobox, vGuard<unknown>);
+	const { readonlyModel, ...base } = baseHandlers(fieldId, state, globalState, FieldTypes.asyncCombobox, vGuard<unknown>);
 
 	const placeholder = computed(() => {
 		const v = readonlyModel()
