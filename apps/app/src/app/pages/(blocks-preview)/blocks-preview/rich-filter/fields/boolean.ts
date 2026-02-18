@@ -59,8 +59,10 @@ export class BooleanField implements FocusElementOptions {
 	readonly focusMonitor = inject(FocusMonitor);
 	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 
-	readonly onFocusElement = effect(()=>{
-		console.log(this.monitoredInput())
-		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
-	})
+	readonly onFocusElement = effect(() => {
+		// Helm checkbox doesn't expose the input element, so we need to query it manually here
+		// TODO refactor the checkbox to expose the input element and avoid this query
+		const el = this.monitoredInput().nativeElement.querySelector('button[role="checkbox"]') ;
+		this.service.isFocused() && this.focusMonitor.focusVia(el, FAKE_FOCUS_ORIGIN);
+	});
 }
