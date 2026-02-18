@@ -155,24 +155,24 @@ export class BrnTimeInputSegment {
 	private _focusNextSegment(): void {
 		const el = this._segmentEl()?.nativeElement;
 		if (!el) return;
-		const parent = el.closest('brn-time-input');
-		if (!parent) return;
-		const segments = Array.from(parent.querySelectorAll('brn-time-input-segment span[role="spinbutton"]'));
-		const idx = segments.indexOf(el);
-		if (idx < segments.length - 1) {
-			(segments[idx + 1] as HTMLElement).focus();
+		const container = el.closest('brn-time-input')?.parentElement;
+		if (!container) return;
+		const focusable = Array.from(container.querySelectorAll<HTMLElement>('span[role="spinbutton"], button:not([disabled])'));
+		const idx = focusable.indexOf(el);
+		if (idx >= 0 && idx < focusable.length - 1) {
+			focusable[idx + 1].focus();
 		}
 	}
 
 	private _focusPreviousSegment(): void {
 		const el = this._segmentEl()?.nativeElement;
 		if (!el) return;
-		const parent = el.closest('brn-time-input');
-		if (!parent) return;
-		const segments = Array.from(parent.querySelectorAll('brn-time-input-segment span[role="spinbutton"]'));
-		const idx = segments.indexOf(el);
+		const container = el.closest('brn-time-input')?.parentElement;
+		if (!container) return;
+		const focusable = Array.from(container.querySelectorAll<HTMLElement>('span[role="spinbutton"], button:not([disabled])'));
+		const idx = focusable.indexOf(el);
 		if (idx > 0) {
-			(segments[idx - 1] as HTMLElement).focus();
+			focusable[idx - 1].focus();
 		}
 	}
 }

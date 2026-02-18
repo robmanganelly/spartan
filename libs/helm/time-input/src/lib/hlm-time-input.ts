@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, viewChildren } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
-import { BrnTimeInput, BrnTimeInputSegment, type BrnTimePeriod, type BrnTimeValue } from '@spartan-ng/brain/time-input';
+import { BrnTimeInput, BrnTimeInputSegment, BrnTimePicker, BrnTimePickerColumn, type BrnTimePeriod, type BrnTimeValue } from '@spartan-ng/brain/time-input';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
@@ -21,6 +21,8 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 	imports: [
 		BrnTimeInput,
 		BrnTimeInputSegment,
+		BrnTimePicker,
+		BrnTimePickerColumn,
 		HlmTimeInputSegment,
 		NgIcon,
 		HlmPopoverImports,
@@ -51,21 +53,22 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 					<brn-time-input-segment hlm segment="period" />
 				</brn-time-input>
 
-				<button hlmPopoverTrigger hlmBtn size="icon" variant="ghost" type="button" [disabled]="disabled()">
+				<button hlmPopoverTrigger hlmBtn size="icon" variant="ghost" type="button" [disabled]="disabled()" (keydown)="_onTriggerKeydown($event)">
 					<ng-icon hlm name="lucideClock" size="sm" />
 				</button>
 			</div>
 
 			<hlm-popover-content class="w-fit min-w-0 rounded-xl p-0" *hlmPopoverPortal="let ctx">
-				<div class="flex divide-x overflow-hidden" role="listbox">
+				<div brnTimePicker class="flex divide-x overflow-hidden">
 					<!-- Hours column -->
-					<div class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" role="group" aria-label="Hours">
+					<div brnTimePickerColumn class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" aria-label="Hours">
 						@for (h of _hours; track h) {
 							<button
 								type="button"
-								class="hover:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm transition-colors"
+								class="hover:bg-accent focus-visible:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm outline-none transition-colors"
 								[class.bg-accent]="h === value().hours"
 								[class.font-semibold]="h === value().hours"
+								[attr.data-selected]="h === value().hours || null"
 								(click)="_setHours(h)"
 								#hourBtn
 							>
@@ -75,13 +78,14 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 					</div>
 
 					<!-- Minutes column -->
-					<div class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" role="group" aria-label="Minutes">
+					<div brnTimePickerColumn class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" aria-label="Minutes">
 						@for (m of _minuteSeconds; track m) {
 							<button
 								type="button"
-								class="hover:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm transition-colors"
+								class="hover:bg-accent focus-visible:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm outline-none transition-colors"
 								[class.bg-accent]="m === value().minutes"
 								[class.font-semibold]="m === value().minutes"
+								[attr.data-selected]="m === value().minutes || null"
 								(click)="_setMinutes(m)"
 								#minuteBtn
 							>
@@ -92,13 +96,14 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 
 					<!-- Seconds column (conditional) -->
 					@if (displaySeconds()) {
-						<div class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" role="group" aria-label="Seconds">
+						<div brnTimePickerColumn class="flex h-56 w-16 shrink-0 flex-col overflow-y-auto p-1" aria-label="Seconds">
 							@for (s of _minuteSeconds; track s) {
 								<button
 									type="button"
-									class="hover:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm transition-colors"
+									class="hover:bg-accent focus-visible:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm outline-none transition-colors"
 									[class.bg-accent]="s === value().seconds"
 									[class.font-semibold]="s === value().seconds"
+									[attr.data-selected]="s === value().seconds || null"
 									(click)="_setSeconds(s)"
 									#secondBtn
 								>
@@ -109,13 +114,14 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 					}
 
 					<!-- Period column -->
-					<div class="flex h-56 w-14 shrink-0 flex-col p-1" role="group" aria-label="Period">
+					<div brnTimePickerColumn class="flex h-56 w-14 shrink-0 flex-col p-1" aria-label="Period">
 						@for (p of _periods; track p) {
 							<button
 								type="button"
-								class="hover:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm font-medium transition-colors"
+								class="hover:bg-accent focus-visible:bg-accent min-w-9 rounded-sm px-3 py-1.5 text-center text-sm font-medium outline-none transition-colors"
 								[class.bg-accent]="p === value().period"
 								[class.font-semibold]="p === value().period"
+								[attr.data-selected]="p === value().period || null"
 								(click)="_setPeriod(p)"
 							>
 								{{ p }}
@@ -128,6 +134,8 @@ const HLM_TIME_INPUT_VALUE_ACCESSOR = {
 	`,
 })
 export class HlmTimeInput implements ControlValueAccessor {
+	private readonly _segments = viewChildren(BrnTimeInputSegment);
+
 	public readonly userClass = input<ClassValue>('', { alias: 'class' });
 	readonly displaySeconds = input(false);
 
@@ -169,6 +177,28 @@ export class HlmTimeInput implements ControlValueAccessor {
 
 	setDisabledState(isDisabled: boolean): void {
 		this.disabled.set(isDisabled);
+	}
+
+	/** Focuses the first segment (hours) of the time input. */
+	focus(): void {
+		const segments = this._segments();
+		if (segments.length > 0) {
+			segments[0].focus();
+		}
+	}
+
+	protected _onTriggerKeydown(event: KeyboardEvent): void {
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			const btn = event.target as HTMLElement;
+			const container = btn.parentElement;
+			if (!container) return;
+			const focusable = Array.from(container.querySelectorAll<HTMLElement>('span[role="spinbutton"], button:not([disabled])'));
+			const idx = focusable.indexOf(btn);
+			if (idx > 0) {
+				focusable[idx - 1].focus();
+			}
+		}
 	}
 
 	protected _onValueChange(value: BrnTimeValue): void {
