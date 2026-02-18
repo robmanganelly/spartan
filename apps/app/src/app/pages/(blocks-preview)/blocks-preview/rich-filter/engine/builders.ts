@@ -56,7 +56,7 @@ export const buildNumberField = (
 export const buildDateField = (
 	id: string,
 	value: Date,
-	operator: IEqualityOperator,
+	operator: ITimeOperator,
 	options?: {
 		initialVisible?: boolean;
 		min?: Date;

@@ -134,7 +134,7 @@ export default class RichFilterPage {
 		f.number('age', 0, Operators.greaterThan, { min: 0, max: 120, step: 1, label: 'Age' }),
 		f.boolean('isActive', true, { label: 'Is Active' }),
 		f.select('role', null, Operators.is, { options: roleOptions, label: 'Role' }),
-		f.date('createdAt', new Date(), Operators.lessThan, { max: new Date(), label: 'Created At' }),
+		f.date('createdAt', new Date(), Operators.at, { max: new Date(), label: 'Created At' }),
 		f.daterange('dateRange', { start: new Date(), end: new Date() }, Operators.between, {
 			max: new Date(),
 			label: 'Date Range',
