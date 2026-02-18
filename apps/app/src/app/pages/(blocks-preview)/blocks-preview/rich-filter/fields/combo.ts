@@ -57,7 +57,7 @@ import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 			<!-- select field with options -->
 			<hlm-combobox [ngModel]="service.controlValue()" (ngModelChange)="service.updateControl($event)">
-				<hlm-combobox-input #monitoredInput [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
+				<hlm-combobox-input [id]="service.formId()" #monitoredInput [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					<hlm-combobox-empty>No items found.</hlm-combobox-empty>
 					<div hlmComboboxList>
@@ -82,6 +82,9 @@ export class ComboField implements FocusElementOptions {
 
 	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 	readonly onFocusElement = effect(() => {
-		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+		// TODO fix combobox api to expose a reference to the input element
+		// to make it possible to focus without querying the DOM
+		const el = this.monitoredInput().nativeElement.querySelector('input[brnComboboxInput]');
+		this.service.isFocused() &&	this.focusMonitor.focusVia(el, FAKE_FOCUS_ORIGIN);
 	});
 }

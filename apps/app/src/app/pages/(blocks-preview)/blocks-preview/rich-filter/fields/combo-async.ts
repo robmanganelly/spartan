@@ -59,7 +59,7 @@ import { FocusMonitor } from '@angular/cdk/a11y';
 				(ngModelChange)="service.updateControl($event)"
 				[itemToString]="service.itemToString()"
 			>
-				<hlm-combobox-input #monitoredInput [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
+				<hlm-combobox-input #monitoredInput [id]="service.formId()" [placeholder]="service.placeholder()" class="rounded-none border-l-0" />
 				<hlm-combobox-content *hlmComboboxPortal>
 					@if (showStatus()) {
 						<hlm-combobox-status>
@@ -128,6 +128,9 @@ export class ComboAsyncField implements FocusElementOptions {
 	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 
 	readonly onFocusElement = effect(() => {
-		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+		// TODO fix combobox api to expose a reference to the input element
+		// to make it possible to focus without querying the DOM
+		const el = this.monitoredInput().nativeElement.querySelector('input[brnComboboxInput]');
+		this.service.isFocused() && this.focusMonitor.focusVia(el, FAKE_FOCUS_ORIGIN);
 	});
 }
