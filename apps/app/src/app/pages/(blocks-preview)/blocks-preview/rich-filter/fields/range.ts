@@ -52,13 +52,19 @@ import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 				/>
 
 				<!-- popover with slider -->
-				<button variant="outline" hlmPopoverTrigger hlmBtn variant="outline">
+				<button
+					class="focus:border-ring focus:ring-ring/50 focus:ring-[3px]"
+					#monitoredInput
+					variant="outline"
+					hlmPopoverTrigger
+					hlmBtn
+					variant="outline"
+				>
 					{{ _displayRange() }}
 				</button>
 				<hlm-popover-content class="rounded-xl p-0 text-sm" *hlmPopoverPortal="let ctx">
 					<div class="p-4 text-sm">
 						<hlm-range-slider
-							#monitoredInput
 							[min]="service.min()"
 							[max]="service.max()"
 							[value]="service.controlValue()"

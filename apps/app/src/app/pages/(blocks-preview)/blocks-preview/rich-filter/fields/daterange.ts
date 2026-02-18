@@ -54,7 +54,14 @@ import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 				/>
 
 				<!-- popover with range calendar -->
-				<button #monitoredInput hlmPopoverTrigger hlmBtn variant="outline" #dateRangeTrigger>
+				<button
+					class="focus:border-ring focus:ring-ring/50 focus:ring-[3px]"
+					#monitoredInput
+					hlmPopoverTrigger
+					hlmBtn
+					variant="outline"
+					#dateRangeTrigger
+				>
 					<ng-icon hlm name="lucideCalendar" size="sm" />
 					{{ startDate() | date: 'MMM d' }} - {{ endDate() | date: 'MMM d' }}
 				</button>

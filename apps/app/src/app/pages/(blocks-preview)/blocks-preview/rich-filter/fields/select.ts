@@ -1,9 +1,8 @@
-import { afterRenderEffect, ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 
-import { FocusMonitor } from '@angular/cdk/a11y';
 import { lucideLink2, lucideX } from '@ng-icons/lucide';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { BrnSelect, BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmButtonGroupImports } from '@spartan-ng/helm/button-group';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
@@ -18,8 +17,6 @@ import { FieldTypes } from '../engine/types';
 import { FieldClose } from './utils/field-close';
 import { FieldLabel } from './utils/field-label';
 import { FieldOperator } from './utils/field-operator';
-import { FocusElementOptions } from './utils/focus-element';
-import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 
 @Component({
 	selector: 'spartan-rich-filter-select-field',
@@ -63,7 +60,6 @@ import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 			>
 			<!-- extra styles on this selector are needed to apply focus styles -->
 				<hlm-select-trigger
-					#monitoredInput
 					class="[&>button:focus]:border-ring [&>button:focus]:ring-ring/50 [&>button:focus]:ring-[3px]"
 				>
 					<hlm-select-value>
@@ -84,16 +80,13 @@ import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 		</div>
 	`,
 })
-export class SelectField implements FocusElementOptions {
+export class SelectField {
 	protected readonly service = inject(FILTER_HANDLER) as FHandler<typeof FieldTypes.select>;
 
 	readonly operators = IdentityOperators;
-	readonly focusMonitor = inject(FocusMonitor);
-
-	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
+	private readonly selectComponent = viewChild.required(BrnSelect)
 
 	readonly onFocusElement = effect(() => {
-		this.service.isFocused() &&
-			this.focusMonitor.focusVia(this.monitoredInput().nativeElement.querySelector('button'), FAKE_FOCUS_ORIGIN);
+		this.service.isFocused() &&	this.selectComponent().trigger()?.focus()
 	});
 }
