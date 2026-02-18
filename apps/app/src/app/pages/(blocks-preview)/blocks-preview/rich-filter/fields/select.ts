@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
+import { afterRenderEffect, ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 
 import { FocusMonitor } from '@angular/cdk/a11y';
@@ -60,9 +60,12 @@ import { FAKE_FOCUS_ORIGIN } from '../engine/constants';
 				placeholder="Select an option"
 				[value]="service.controlValue()"
 				(valueChange)="service.updateControl($event)"
-				#monitoredInput
 			>
-				<hlm-select-trigger>
+			<!-- extra styles on this selector are needed to apply focus styles -->
+				<hlm-select-trigger
+					#monitoredInput
+					class="[&>button:focus]:border-ring [&>button:focus]:ring-ring/50 [&>button:focus]:ring-[3px]"
+				>
 					<hlm-select-value>
 						<div *brnSelectValue="let value">
 							<span>{{ service.selectedOptionLabel() }}</span>
@@ -90,6 +93,7 @@ export class SelectField implements FocusElementOptions {
 	readonly monitoredInput = viewChild.required('monitoredInput', { read: ElementRef<HTMLElement> });
 
 	readonly onFocusElement = effect(() => {
-		this.service.isFocused() && this.focusMonitor.focusVia(this.monitoredInput(), FAKE_FOCUS_ORIGIN);
+		this.service.isFocused() &&
+			this.focusMonitor.focusVia(this.monitoredInput().nativeElement.querySelector('button'), FAKE_FOCUS_ORIGIN);
 	});
 }

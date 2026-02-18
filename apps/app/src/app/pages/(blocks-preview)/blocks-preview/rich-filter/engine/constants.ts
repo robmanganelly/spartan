@@ -30,4 +30,4 @@ export const QueryToken = 'HTTP_RESOURCE_QUERY_TOKEN';
  */
 export const FOCUS_FALLBACK = 'FOCUS_FALLBACK';
 
-export const FAKE_FOCUS_ORIGIN = 'mouse' satisfies FocusOrigin;
+export const FAKE_FOCUS_ORIGIN = 'program' satisfies FocusOrigin;
