@@ -115,25 +115,25 @@ describe('buildDateField', () => {
 	const d = new Date('2024-06-15');
 
 	it('should produce the correct __type', () => {
-		expect(buildDateField('d', d, EqualityOperators.greaterThanOrEqual).__type).toBe(FieldTypes.date);
+		expect(buildDateField('d', d, TimeOperators.past).__type).toBe(FieldTypes.date);
 	});
 
 	it('should store min and max dates', () => {
 		const min = new Date('2024-01-01');
 		const max = new Date('2024-12-31');
-		const f = buildDateField('d', d, EqualityOperators.equals, { min, max });
+		const f = buildDateField('d', d, TimeOperators.at, { min, max });
 		expect(f.__min).toEqual(min);
 		expect(f.__max).toEqual(max);
 	});
 
 	it('should leave min/max undefined when not provided', () => {
-		const f = buildDateField('d', d, EqualityOperators.equals);
+		const f = buildDateField('d', d, TimeOperators.at);
 		expect(f.__min).toBeUndefined();
 		expect(f.__max).toBeUndefined();
 	});
 
 	it('should store __reset as the initial date', () => {
-		expect(buildDateField('d', d, EqualityOperators.equals).__reset).toEqual(d);
+		expect(buildDateField('d', d, TimeOperators.at).__reset).toEqual(d);
 	});
 });
 

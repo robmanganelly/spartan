@@ -281,4 +281,118 @@ describe('BrnTimeInput', () => {
 			expect(hoursHost).not.toHaveAttribute('data-active');
 		});
 	});
+
+	describe('keyboard navigation — ArrowRight / ArrowLeft', () => {
+		it('should move focus from hours to minutes with ArrowRight', async () => {
+			const { hours, minutes, user } = await setup();
+			hours.focus();
+			await user.keyboard('[ArrowRight]');
+
+			expect(document.activeElement).toBe(minutes);
+		});
+
+		it('should move focus from minutes to seconds with ArrowRight', async () => {
+			const { minutes, seconds, user } = await setup();
+			minutes.focus();
+			await user.keyboard('[ArrowRight]');
+
+			expect(document.activeElement).toBe(seconds);
+		});
+
+		it('should move focus from seconds to period with ArrowRight', async () => {
+			const { seconds, period, user } = await setup();
+			seconds.focus();
+			await user.keyboard('[ArrowRight]');
+
+			expect(document.activeElement).toBe(period);
+		});
+
+		it('should move focus from period to minutes with ArrowLeft', async () => {
+			const { period, seconds, user } = await setup();
+			period.focus();
+			await user.keyboard('[ArrowLeft]');
+
+			expect(document.activeElement).toBe(seconds);
+		});
+
+		it('should move focus from minutes to hours with ArrowLeft', async () => {
+			const { minutes, hours, user } = await setup();
+			minutes.focus();
+			await user.keyboard('[ArrowLeft]');
+
+			expect(document.activeElement).toBe(hours);
+		});
+
+		it('should not move focus left from hours (first segment)', async () => {
+			const { hours, user } = await setup();
+			hours.focus();
+			await user.keyboard('[ArrowLeft]');
+
+			expect(document.activeElement).toBe(hours);
+		});
+
+		it('should not move focus right from period (last segment) when no sibling element', async () => {
+			const { period, user } = await setup();
+			period.focus();
+			await user.keyboard('[ArrowRight]');
+
+			expect(document.activeElement).toBe(period);
+		});
+	});
+
+	describe('keyboard navigation — ArrowRight / ArrowLeft with sibling elements', () => {
+		const setupWithSibling = async () => {
+			const onValueChange = jest.fn();
+			const container = await render(
+				`
+				<div>
+					<brn-time-input
+						[value]="value"
+						(valueChange)="onValueChange($event)"
+					>
+						<brn-time-input-segment segment="hours" />
+						<span aria-hidden="true">:</span>
+						<brn-time-input-segment segment="minutes" />
+						<brn-time-input-segment segment="period" />
+					</brn-time-input>
+					<button id="sibling-btn">Trigger</button>
+				</div>
+				`,
+				{
+					imports: [BrnTimeInputImports],
+					componentProperties: {
+						value: defaultValue,
+						onValueChange,
+					},
+				},
+			);
+
+			const spinbuttons = screen.getAllByRole('spinbutton');
+			const siblingBtn = container.fixture.nativeElement.querySelector('#sibling-btn') as HTMLButtonElement;
+			return {
+				user: userEvent.setup(),
+				container,
+				hours: spinbuttons[0],
+				minutes: spinbuttons[1],
+				period: spinbuttons[2],
+				siblingBtn,
+			};
+		};
+
+		it('should move focus from last segment to sibling button with ArrowRight', async () => {
+			const { period, siblingBtn, user } = await setupWithSibling();
+			period.focus();
+			await user.keyboard('[ArrowRight]');
+
+			expect(document.activeElement).toBe(siblingBtn);
+		});
+
+		it('should not move focus from first segment to any element before it with ArrowLeft', async () => {
+			const { hours, user } = await setupWithSibling();
+			hours.focus();
+			await user.keyboard('[ArrowLeft]');
+
+			expect(document.activeElement).toBe(hours);
+		});
+	});
 });

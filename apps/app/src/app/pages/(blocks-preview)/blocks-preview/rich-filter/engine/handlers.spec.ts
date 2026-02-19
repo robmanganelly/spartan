@@ -25,6 +25,7 @@ import {
 	asyncComboFieldHandlers,
 	throwHandlerException,
 	FIELD_HANDLERS_MAP,
+	type HandlerGlobalState,
 } from './handlers';
 import { EqualityOperators, IdentityOperators, Operators, TextOperators, TimeOperators } from './operators';
 import { FieldTypes } from './types';
@@ -40,6 +41,10 @@ function createState(...fields: RFilterField[]) {
 		{} as Record<string, RFilterField>,
 	);
 	return signal(record);
+}
+
+function createGlobalState(): HandlerGlobalState {
+	return { focusedField: signal<string | null>(null) };
 }
 
 // ─── FIELD_HANDLERS_MAP ─────────────────────────────────────────────
@@ -65,7 +70,7 @@ describe('textFieldHandlers', () => {
 			...opts,
 		});
 		const state = createState(field);
-		const handlers = textFieldHandlers('name', state);
+		const handlers = textFieldHandlers('name', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -140,7 +145,7 @@ describe('numberFieldHandlers', () => {
 			...opts,
 		});
 		const state = createState(field);
-		const handlers = numberFieldHandlers('qty', state);
+		const handlers = numberFieldHandlers('qty', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -176,7 +181,7 @@ describe('booleanFieldHandlers', () => {
 	const setup = (value: boolean | null = true) => {
 		const field = buildBooleanField('active', value, { initialVisible: true });
 		const state = createState(field);
-		const handlers = booleanFieldHandlers('active', state);
+		const handlers = booleanFieldHandlers('active', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -208,12 +213,12 @@ describe('booleanFieldHandlers', () => {
 describe('dateFieldHandlers', () => {
 	const now = new Date('2024-06-15');
 	const setup = (opts?: { min?: Date; max?: Date }) => {
-		const field = buildDateField('start', now, EqualityOperators.greaterThanOrEqual, {
+		const field = buildDateField('start', now, TimeOperators.past, {
 			initialVisible: true,
 			...opts,
 		});
 		const state = createState(field);
-		const handlers = dateFieldHandlers('start', state);
+		const handlers = dateFieldHandlers('start', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -245,7 +250,7 @@ describe('timeFieldHandlers', () => {
 	const setup = () => {
 		const field = buildTimeField('alarm', base, TimeOperators.at, { initialVisible: true });
 		const state = createState(field);
-		const handlers = timeFieldHandlers('alarm', state);
+		const handlers = timeFieldHandlers('alarm', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -302,7 +307,7 @@ describe('rangeFieldHandlers', () => {
 			...opts,
 		});
 		const state = createState(field);
-		const handlers = rangeFieldHandlers('price', state);
+		const handlers = rangeFieldHandlers('price', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -334,7 +339,7 @@ describe('dateRangeFieldHandlers', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = dateRangeFieldHandlers('period', state);
+		const handlers = dateRangeFieldHandlers('period', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -363,7 +368,7 @@ describe('selectFieldHandlers', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = selectFieldHandlers('color', state);
+		const handlers = selectFieldHandlers('color', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -404,7 +409,7 @@ describe('comboboxFieldHandlers', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = comboboxFieldHandlers('tag', state);
+		const handlers = comboboxFieldHandlers('tag', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -432,13 +437,13 @@ describe('base handler behaviour (via textFieldHandlers)', () => {
 		const field = buildNumberField('qty', 10, EqualityOperators.equals, { initialVisible: true });
 		const state = createState(field);
 
-		expect(() => textFieldHandlers('qty', state)).toThrow('Exception in Handler');
+		expect(() => textFieldHandlers('qty', state, createGlobalState())).toThrow('Exception in Handler');
 	});
 
 	it('should be resilient when updating a field that no longer exists', () => {
 		const field = buildTextField('tmp', 'x', TextOperators.includes, { initialVisible: true });
 		const state = createState(field);
-		const handlers = textFieldHandlers('tmp', state);
+		const handlers = textFieldHandlers('tmp', state, createGlobalState());
 
 		// Remove the field from state
 		state.update((s) => {
@@ -466,7 +471,7 @@ describe('setOperator edge cases (via textFieldHandlers)', () => {
 	const setup = () => {
 		const field = buildTextField('q', 'hello', TextOperators.includes, { initialVisible: true });
 		const state = createState(field);
-		const handlers = textFieldHandlers('q', state);
+		const handlers = textFieldHandlers('q', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -506,7 +511,7 @@ describe('asyncComboFieldHandlers', () => {
 			initialVisible: true,
 		}) as unknown as RFilterField;
 		const state = createState(field);
-		const handlers = asyncComboFieldHandlers('search', state);
+		const handlers = asyncComboFieldHandlers('search', state, createGlobalState());
 		return { state, handlers };
 	};
 
@@ -560,7 +565,7 @@ describe('asyncComboFieldHandlers', () => {
 	it('should throw on type mismatch', () => {
 		const field = buildTextField('q', '', TextOperators.includes, { initialVisible: true });
 		const state = createState(field);
-		expect(() => asyncComboFieldHandlers('q', state)).toThrow('Exception in Handler');
+		expect(() => asyncComboFieldHandlers('q', state, createGlobalState())).toThrow('Exception in Handler');
 	});
 });
 
@@ -579,7 +584,7 @@ describe('selectFieldHandlers (extra coverage)', () => {
 			itemToString: (v: unknown) => `Color: ${v}`,
 		});
 		const state = createState(field);
-		const handlers = selectFieldHandlers('color', state);
+		const handlers = selectFieldHandlers('color', state, createGlobalState());
 
 		expect(handlers.selectedOptionLabel()).toBe('Color: red');
 	});
@@ -590,7 +595,7 @@ describe('selectFieldHandlers (extra coverage)', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = selectFieldHandlers('color', state);
+		const handlers = selectFieldHandlers('color', state, createGlobalState());
 
 		handlers.updateControl(['blue']);
 		expect(handlers.controlValue()).toBe('blue');
@@ -602,7 +607,7 @@ describe('selectFieldHandlers (extra coverage)', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = selectFieldHandlers('color', state);
+		const handlers = selectFieldHandlers('color', state, createGlobalState());
 
 		handlers.updateControl('blue');
 		expect(handlers.controlValue()).toBe('blue');
@@ -624,7 +629,7 @@ describe('dateRangeFieldHandlers (extra coverage)', () => {
 			max,
 		});
 		const state = createState(field);
-		const handlers = dateRangeFieldHandlers('period', state);
+		const handlers = dateRangeFieldHandlers('period', state, createGlobalState());
 
 		expect(handlers.min()).toEqual(min);
 		expect(handlers.max()).toEqual(max);
@@ -638,7 +643,7 @@ describe('dateRangeFieldHandlers (extra coverage)', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = dateRangeFieldHandlers('period', state);
+		const handlers = dateRangeFieldHandlers('period', state, createGlobalState());
 
 		const newValue = { start: new Date('2025-03-01'), end: new Date('2025-09-30') };
 		handlers.updateControl(newValue);
@@ -652,7 +657,7 @@ describe('rangeFieldHandlers (extra coverage)', () => {
 	it('should default min to null and max to null when not provided', () => {
 		const field = buildRangeField('r', [10, 50], Operators.between, { initialVisible: true });
 		const state = createState(field);
-		const handlers = rangeFieldHandlers('r', state);
+		const handlers = rangeFieldHandlers('r', state, createGlobalState());
 
 		// buildRangeField defaults min=0 and max=100, so handlers should reflect those
 		expect(handlers.min()).toBe(0);
@@ -666,7 +671,7 @@ describe('rangeFieldHandlers (extra coverage)', () => {
 			max: 500,
 		});
 		const state = createState(field);
-		const handlers = rangeFieldHandlers('r', state);
+		const handlers = rangeFieldHandlers('r', state, createGlobalState());
 
 		expect(handlers.min()).toBe(-50);
 		expect(handlers.max()).toBe(500);
@@ -682,7 +687,7 @@ describe('comboboxFieldHandlers (extra coverage)', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = comboboxFieldHandlers('tag', state);
+		const handlers = comboboxFieldHandlers('tag', state, createGlobalState());
 
 		expect(handlers.placeholder()).toBe('');
 	});
@@ -695,7 +700,7 @@ describe('comboboxFieldHandlers (extra coverage)', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = comboboxFieldHandlers('tag', state);
+		const handlers = comboboxFieldHandlers('tag', state, createGlobalState());
 
 		expect(handlers.options()).toEqual([]);
 	});
@@ -713,7 +718,7 @@ describe('timeFieldHandlers (extra coverage)', () => {
 			max,
 		});
 		const state = createState(field);
-		const handlers = timeFieldHandlers('alarm', state);
+		const handlers = timeFieldHandlers('alarm', state, createGlobalState());
 
 		expect(handlers.min()).toEqual(min);
 		expect(handlers.max()).toEqual(max);
@@ -724,7 +729,7 @@ describe('timeFieldHandlers (extra coverage)', () => {
 			initialVisible: true,
 		});
 		const state = createState(field);
-		const handlers = timeFieldHandlers('alarm', state);
+		const handlers = timeFieldHandlers('alarm', state, createGlobalState());
 
 		expect(handlers.min()).toBeNull();
 		expect(handlers.max()).toBeNull();
@@ -734,7 +739,7 @@ describe('timeFieldHandlers (extra coverage)', () => {
 		const base = new Date(2024, 5, 15, 9, 15, 30); // 9:15:30 AM
 		const field = buildTimeField('alarm', base, TimeOperators.at, { initialVisible: true });
 		const state = createState(field);
-		const handlers = timeFieldHandlers('alarm', state);
+		const handlers = timeFieldHandlers('alarm', state, createGlobalState());
 
 		const tv = handlers.controlValue();
 		expect(tv.hours).toBe(9);
@@ -747,7 +752,7 @@ describe('timeFieldHandlers (extra coverage)', () => {
 		const base = new Date(2024, 5, 15, 0, 0, 0);
 		const field = buildTimeField('alarm', base, TimeOperators.at, { initialVisible: true });
 		const state = createState(field);
-		const handlers = timeFieldHandlers('alarm', state);
+		const handlers = timeFieldHandlers('alarm', state, createGlobalState());
 
 		const tv = handlers.controlValue();
 		expect(tv.hours).toBe(12); // midnight displays as 12 AM
@@ -760,7 +765,7 @@ describe('timeFieldHandlers (extra coverage)', () => {
 		const base = new Date(2024, 5, 15, 12, 0, 0);
 		const field = buildTimeField('alarm', base, TimeOperators.at, { initialVisible: true });
 		const state = createState(field);
-		const handlers = timeFieldHandlers('alarm', state);
+		const handlers = timeFieldHandlers('alarm', state, createGlobalState());
 
 		const tv = handlers.controlValue();
 		expect(tv.hours).toBe(12);

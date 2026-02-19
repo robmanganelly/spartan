@@ -5,7 +5,7 @@ import { IOperator } from './operators';
 import { FieldTypes, IFieldType } from './types';
 import { FOCUS_FALLBACK } from './constants';
 
-type HandlerGlobalState = {
+export type HandlerGlobalState = {
 	focusedField: WritableSignal<string | null>;
 }
 

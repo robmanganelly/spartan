@@ -108,7 +108,7 @@ describe('filterParser', () => {
 			buildTextField('name', 'Alice', TextOperators.includes, { initialVisible: true }),
 			buildNumberField('age', 30, EqualityOperators.greaterThan, { initialVisible: true }),
 			buildBooleanField('active', true, { initialVisible: true }),
-			buildDateField('created', now, EqualityOperators.greaterThanOrEqual, { initialVisible: true }),
+			buildDateField('created', now, TimeOperators.past, { initialVisible: true }),
 			buildRangeField('price', [10, 50], Operators.between, { initialVisible: true }),
 		);
 

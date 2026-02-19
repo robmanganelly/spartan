@@ -300,7 +300,7 @@ describe('buildFilterModel', () => {
 			const min = new Date('2024-01-01');
 			const max = new Date('2024-12-31');
 			const model = buildFilterModel(
-				buildDateField('start', new Date('2024-06-15'), EqualityOperators.greaterThanOrEqual, { min, max }),
+				buildDateField('start', new Date('2024-06-15'), TimeOperators.past, { min, max }),
 			);
 			const field = model.value()['start'];
 			expect(field.__type).toBe('date');
